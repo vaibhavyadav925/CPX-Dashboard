@@ -17,6 +17,8 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
   bool _rememberMe = true;
+  bool _isArrowSliding = false;
+  bool _isNavigating = false;
 
   @override
   void dispose() {
@@ -43,6 +45,40 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     );
   }
 
+  Future<void> _animateAndContinue() async {
+    if (_isNavigating) return;
+
+    // Validate before animating so invalid forms stay on the current screen.
+    if (!_formKey.currentState!.validate()) return;
+    if (_isSignup &&
+        _passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match.')));
+      return;
+    }
+
+    setState(() {
+      _isArrowSliding = true;
+      _isNavigating = true;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 280));
+    if (!mounted) return;
+
+    setState(() {
+      _isArrowSliding = false;
+    });
+
+    // Keep navigation logic in the existing method.
+    _continueToDashboard();
+    if (mounted) {
+      setState(() {
+        _isNavigating = false;
+      });
+    }
+  }
+
   InputDecoration _fieldDecoration(
     String label,
     IconData icon, {
@@ -54,6 +90,10 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
       suffixIcon: suffix,
       filled: true,
       fillColor: const Color(0xFFF8FAFC),
+      labelStyle: const TextStyle(color: Color(0xFF172C4C)),
+      floatingLabelStyle: const TextStyle(color: Color(0xFF0B91AD)),
+      hintStyle: const TextStyle(color: Color(0xFF52627A)),
+      prefixIconColor: const Color(0xFF52627A),
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -85,7 +125,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           statusBarBrightness: Brightness.dark,
         ),
         child: Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: navy,
           body: Column(
             children: [
               // Navy background extends behind the phone status bar.
@@ -322,7 +362,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           Text(
             _isSignup ? 'Create your account' : 'Welcome back',
             style: const TextStyle(
-              color: navy,
+              color: Color(0xFFFFFFFF),
               fontSize: 27,
               fontWeight: FontWeight.w900,
               letterSpacing: -.4,
@@ -333,12 +373,17 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             _isSignup
                 ? 'Sign up to get started with CPXBOAT.'
                 : 'Sign in to continue to your CPXBOAT workspace.',
-            style: const TextStyle(color: muted, fontSize: 13, height: 1.5),
+            style: const TextStyle(
+              color: Color(0xFFD4DEEC),
+              fontSize: 13,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 28),
           if (_isSignup) ...[
             TextFormField(
               controller: _nameController,
+              style: const TextStyle(color: Color(0xFF0B1730)),
               textCapitalization: TextCapitalization.words,
               decoration: _fieldDecoration(
                 'Full Name',
@@ -351,6 +396,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           ],
           TextFormField(
             controller: _emailController,
+            style: const TextStyle(color: Color(0xFF0B1730)),
             keyboardType: TextInputType.emailAddress,
             autofillHints: const [AutofillHints.email],
             decoration: _fieldDecoration(
@@ -368,6 +414,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           const SizedBox(height: 15),
           TextFormField(
             controller: _passwordController,
+            style: const TextStyle(color: Color(0xFF0B1730)),
             obscureText: _hidePassword,
             autofillHints: _isSignup
                 ? const [AutofillHints.newPassword]
@@ -396,6 +443,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             const SizedBox(height: 15),
             TextFormField(
               controller: _confirmPasswordController,
+              style: const TextStyle(color: Color(0xFF0B1730)),
               obscureText: _hideConfirmPassword,
               decoration: _fieldDecoration(
                 'Confirm password',
@@ -439,7 +487,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                 const Expanded(
                   child: Text(
                     'Remember me',
-                    style: TextStyle(color: muted, fontSize: 12),
+                    style: TextStyle(color: Color(0xFFD4DEEC), fontSize: 12),
                   ),
                 ),
                 TextButton(
@@ -463,10 +511,10 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
-              onPressed: _continueToDashboard,
+              onPressed: _isNavigating ? null : _animateAndContinue,
               style: ElevatedButton.styleFrom(
                 backgroundColor: teal,
-                foregroundColor: Colors.white,
+                foregroundColor: const Color.fromARGB(255, 255, 254, 254),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -483,7 +531,14 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                     ),
                   ),
                   const SizedBox(width: 9),
-                  const Icon(Icons.arrow_forward_rounded, size: 18),
+                  AnimatedSlide(
+                    offset: _isArrowSliding
+                        ? const Offset(0.7, 0)
+                        : Offset.zero,
+                    duration: const Duration(milliseconds: 280),
+                    curve: Curves.easeInOutCubic,
+                    child: const Icon(Icons.arrow_forward_rounded, size: 18),
+                  ),
                 ],
               ),
             ),
@@ -497,7 +552,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                 child: Text(
                   _isSignup ? 'ALREADY REGISTERED?' : 'NEW TO CPXBOAT?',
                   style: const TextStyle(
-                    color: muted,
+                    color: Color(0xFFD4DEEC),
                     fontSize: 9,
                     fontWeight: FontWeight.w800,
                     letterSpacing: .8,
@@ -514,8 +569,9 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             child: OutlinedButton(
               onPressed: () => setState(() => _isSignup = !_isSignup),
               style: OutlinedButton.styleFrom(
-                foregroundColor: navy,
-                side: const BorderSide(color: premiumBorder),
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white),
+                backgroundColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -523,6 +579,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
               child: Text(
                 _isSignup ? 'Back to sign in' : 'Create a new account',
                 style: const TextStyle(
+                  color: Colors.white,
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),
@@ -534,7 +591,11 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             child: Text(
               'By continuing, you agree to your organisation’s usage policies.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: muted, fontSize: 10, height: 1.5),
+              style: TextStyle(
+                color: Color(0xFFD4DEEC),
+                fontSize: 10,
+                height: 1.5,
+              ),
             ),
           ),
           const SizedBox(height: 8),

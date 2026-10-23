@@ -265,7 +265,7 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
       children: [
         Image.asset(
           'assets/logo.png',
-          width: 125,
+          width: 135,
           height: 70,
           fit: BoxFit.contain,
         ),
