@@ -35,7 +35,10 @@ class WhatsAppScheduledScreen extends StatelessWidget {
     final wide = MediaQuery.of(context).size.width >= 850;
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Scheduled'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Scheduled',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

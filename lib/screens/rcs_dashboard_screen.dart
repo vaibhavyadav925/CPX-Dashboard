@@ -33,7 +33,10 @@ class RCSDashboardScreen extends StatelessWidget {
       ),
     ];
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Dashboard'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Dashboard',
+        currentGroup: 'RCS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

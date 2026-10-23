@@ -109,7 +109,10 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
     }).toList();
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Inbox'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Inbox',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Padding(
         padding: EdgeInsets.fromLTRB(

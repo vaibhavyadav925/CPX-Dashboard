@@ -90,7 +90,10 @@ class _RCSInboxScreenState extends State<RCSInboxScreen> {
     }).toList();
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Inbox'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Inbox',
+        currentGroup: 'RCS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Padding(
         padding: EdgeInsets.fromLTRB(

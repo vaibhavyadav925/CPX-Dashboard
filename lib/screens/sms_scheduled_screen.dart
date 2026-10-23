@@ -8,7 +8,10 @@ class SMSScheduledScreen extends StatelessWidget {
     final wide = MediaQuery.of(context).size.width >= 850;
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Scheduled'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Scheduled',
+        currentGroup: 'SMS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Container(
         color: const Color(0xFFF4F6FB),

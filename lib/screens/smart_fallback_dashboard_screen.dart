@@ -9,7 +9,10 @@ class SmartFallbackDashboardScreen extends StatelessWidget {
     final medium = MediaQuery.of(context).size.width >= 620;
     final padding = wide ? 22.0 : 13.0;
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Dashboard'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Dashboard',
+        currentGroup: 'Smart Fallback',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Container(
         color: const Color(0xFFF3F5FA),

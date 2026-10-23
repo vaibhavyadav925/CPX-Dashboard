@@ -594,7 +594,10 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
 
     final preview = _previewPanel();
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Campaigns'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Campaigns',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: LayoutBuilder(

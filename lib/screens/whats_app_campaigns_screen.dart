@@ -158,7 +158,10 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
     final filterWidth = wide ? 310.0 : MediaQuery.of(context).size.width - 52;
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Campaigns'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Campaigns',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

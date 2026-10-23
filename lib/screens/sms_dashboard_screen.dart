@@ -14,7 +14,10 @@ class SMSDashboardScreen extends StatelessWidget {
       ('Scheduled', '0', Icons.access_time_rounded, teal),
     ];
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Dashboard'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Dashboard',
+        currentGroup: 'SMS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(compact ? 12 : 22),

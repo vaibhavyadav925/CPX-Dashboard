@@ -724,7 +724,10 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
     final wide = MediaQuery.of(context).size.width >= 850;
     final rows = _filtered;
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Campaigns'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Campaigns',
+        currentGroup: 'RCS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: Padding(

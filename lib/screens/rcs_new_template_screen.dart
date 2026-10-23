@@ -788,7 +788,10 @@ class _RCSNewTemplateScreenState extends State<RCSNewTemplateScreen> {
       ],
     );
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Templates'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Templates',
+        currentGroup: 'RCS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: SingleChildScrollView(

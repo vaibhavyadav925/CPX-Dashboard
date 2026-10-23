@@ -104,7 +104,10 @@ class _RCSTemplatesScreenState extends State<RCSTemplatesScreen> {
   Widget build(BuildContext context) {
     final wide = MediaQuery.of(context).size.width >= 900;
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Templates'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Templates',
+        currentGroup: 'RCS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: LayoutBuilder(

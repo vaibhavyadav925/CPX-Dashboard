@@ -7,7 +7,10 @@ class WhatsAppDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final wide = MediaQuery.of(context).size.width >= 850;
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Dashboard'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Dashboard',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

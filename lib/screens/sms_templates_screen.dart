@@ -47,7 +47,10 @@ class _SMSTemplatesScreenState extends State<SMSTemplatesScreen> {
   Widget build(BuildContext context) {
     final wide = MediaQuery.of(context).size.width >= 850;
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Templates'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Templates',
+        currentGroup: 'SMS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

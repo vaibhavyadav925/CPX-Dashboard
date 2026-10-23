@@ -66,7 +66,7 @@ class CPXBoatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CPXBOAT Dashboard',
+      // title: 'CPXBOAT Dashboard',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -225,7 +225,8 @@ class CPXBoatApp extends StatelessWidget {
 
 PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
   final screenWidth = MediaQuery.sizeOf(context).width;
-  // Keep the compact header close to the supplied mobile reference while
+  // Keep the compact header close
+  //to the supplied mobile reference while
   // retaining the same shared app bar on every page.
   final compact = screenWidth < 600;
   final toolbarHeight = screenWidth < 600
@@ -259,18 +260,14 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
         },
       ),
     ),
-    title: const Row(
+    title: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.sailing_rounded, color: Colors.white, size: 19),
-        SizedBox(width: 7),
-        Text(
-          'CPXBOAT',
-          style: TextStyle(
-            fontSize: 14,
-            letterSpacing: .15,
-            fontWeight: FontWeight.w800,
-          ),
+        Image.asset(
+          'assets/logo.png',
+          width: 125,
+          height: 70,
+          fit: BoxFit.contain,
         ),
       ],
     ),
@@ -2480,8 +2477,13 @@ class _FallbackDonutPainter extends CustomPainter {
 
 class DashboardDrawer extends StatefulWidget {
   final String currentPage;
+  final String? currentGroup;
 
-  const DashboardDrawer({super.key, this.currentPage = 'Smart Home'});
+  const DashboardDrawer({
+    super.key,
+    this.currentPage = 'Smart Home',
+    this.currentGroup,
+  });
 
   @override
   State<DashboardDrawer> createState() => _DashboardDrawerState();
@@ -2515,30 +2517,47 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
     super.initState();
 
     selectedItem = widget.currentPage;
-    if ([
-      'Overview',
-      'Leads',
-      'Automations',
-      'Lead Sources',
-      'CRM Settings',
-    ].contains(widget.currentPage)) {
-      expanded['CRM & Automation'] = true;
+    final currentGroup =
+        widget.currentGroup ?? _groupForPage(widget.currentPage);
+    if (currentGroup != null && expanded.containsKey(currentGroup)) {
+      expanded[currentGroup] = true;
     }
-    if ([
-      'Inbox',
-      'Campaigns',
-      'Templates',
-      'Chatbot Flow',
-      'Flows',
-      'Commerce',
-      'Occasions',
-      'Reports',
-      'Scheduled',
-      'Business Profile',
-      'Quick Links',
-      'Tier Limit',
-    ].contains(widget.currentPage)) {
-      expanded['WhatsApp-App'] = true;
+  }
+
+  String? _groupForPage(String page) {
+    switch (page) {
+      case 'Smart Home':
+      case 'MIS Reports':
+        return 'Dashboard';
+      case 'Chatbot Flow':
+      case 'Flows':
+      case 'Commerce':
+      case 'Business Profile':
+      case 'Quick Links':
+      case 'Tier Limit':
+        return 'WhatsApp-App';
+      case 'Chatbot':
+        return 'RCS-App';
+      case 'Sender IDs':
+        return 'SMS-App';
+      case 'Overview':
+      case 'Leads':
+      case 'Automations':
+      case 'Lead Sources':
+      case 'CRM Settings':
+        return 'CRM & Automation';
+      case 'Contact Groups':
+      case 'Agent Roles':
+        return 'Groups & Roles';
+      case 'Channels Info':
+      case 'Onboard Channels':
+        return 'Connectivity';
+      case 'Account Details':
+      case 'Security':
+      case 'Panel Theme':
+        return 'Manage Settings';
+      default:
+        return null;
     }
   }
 
@@ -2569,43 +2588,21 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 16, 17),
-
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.sailing_rounded,
-                      color: Colors.white,
-                      size: 27,
+                    Image.asset(
+                      'assets/logo.png',
+                      width: 130,
+                      height: 50,
+                      fit: BoxFit.contain,
                     ),
-
-                    const SizedBox(width: 9),
-
-                    const Expanded(
-                      child: Text(
-                        'CPXBOAT',
-
-                        style: TextStyle(
-                          fontSize: 21,
-
-                          letterSpacing: .3,
-
-                          fontWeight: FontWeight.w900,
-
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-
+                    const Spacer(),
                     IconButton(
                       visualDensity: VisualDensity.compact,
-
                       onPressed: () => Navigator.pop(context),
-
                       icon: const Icon(
                         Icons.close_rounded,
-
                         color: Colors.white54,
-
                         size: 20,
                       ),
                     ),
@@ -2850,6 +2847,7 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
     final isExpanded = expanded[title] ?? false;
 
     final hasChildren = children.isNotEmpty;
+    final isActive = isSingle && selectedItem == title;
 
     return Column(
       children: [
@@ -2864,50 +2862,49 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
             }
           },
 
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
-
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-
-                  size: 19,
-
-                  color: isExpanded ? Colors.white : const Color(0xFFB5BED0),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Text(
-                    title,
-
-                    style: TextStyle(
-                      color: isExpanded
-                          ? Colors.white
-                          : const Color(0xFFD8DEEA),
-
-                      fontSize: 12,
-
-                      fontWeight: isExpanded
-                          ? FontWeight.w700
-                          : FontWeight.w500,
+          child: Container(
+            decoration: isActive
+                ? BoxDecoration(
+                    color: teal,
+                    borderRadius: BorderRadius.circular(10),
+                  )
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+              child: Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 19,
+                    color: isExpanded || isActive
+                        ? Colors.white
+                        : const Color(0xFFB5BED0),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: isExpanded || isActive
+                            ? Colors.white
+                            : const Color(0xFFD8DEEA),
+                        fontSize: 12,
+                        fontWeight: isExpanded || isActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-
-                if (hasChildren)
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-
-                    color: const Color(0xFF9AA5BA),
-
-                    size: 18,
-                  ),
-              ],
+                  if (hasChildren)
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      color: const Color(0xFF9AA5BA),
+                      size: 18,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -2940,7 +2937,9 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
               );
             }
 
-            final active = selectedItem == item;
+            final active =
+                selectedItem == item &&
+                (widget.currentGroup == null || widget.currentGroup == title);
 
             final childIcon = _childIcon(item);
 

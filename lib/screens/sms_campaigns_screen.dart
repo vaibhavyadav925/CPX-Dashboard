@@ -103,7 +103,10 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
     }).toList();
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Campaigns'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Campaigns',
+        currentGroup: 'SMS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Padding(
         padding: EdgeInsets.all(compact ? 12 : 22),

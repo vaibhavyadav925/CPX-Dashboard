@@ -296,7 +296,10 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
     final wide = MediaQuery.of(context).size.width >= 850;
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Occasions'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Occasions',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

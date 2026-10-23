@@ -297,7 +297,10 @@ class _SmartFallbackOccasionsScreenState
     final wide = MediaQuery.of(context).size.width >= 850;
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Occasions'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Occasions',
+        currentGroup: 'Smart Fallback',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

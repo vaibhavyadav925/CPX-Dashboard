@@ -27,7 +27,10 @@ class RCSScheduledScreen extends StatelessWidget {
     final wide = MediaQuery.of(context).size.width >= 850;
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Scheduled'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Scheduled',
+        currentGroup: 'RCS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

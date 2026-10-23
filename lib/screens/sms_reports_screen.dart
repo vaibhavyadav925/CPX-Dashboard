@@ -30,7 +30,10 @@ class _SMSReportsScreenState extends State<SMSReportsScreen> {
     const cyan = Color(0xFF0B91AD);
 
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Reports'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Reports',
+        currentGroup: 'SMS-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Container(
         color: const Color(0xFFF4F6FB),

@@ -74,7 +74,10 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Templates'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Templates',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: _creating ? _buildCreateTemplatePage() : _buildTemplatesList(),

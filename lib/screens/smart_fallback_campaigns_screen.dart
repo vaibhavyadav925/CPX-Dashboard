@@ -99,7 +99,10 @@ class _SmartFallbackCampaignsScreenState
     final chosen = _selected.toList()..sort();
     final selectedCampaign = chosen.isEmpty ? null : _campaigns[chosen.first];
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Campaigns'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Campaigns',
+        currentGroup: 'Smart Fallback',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: Row(
         children: [

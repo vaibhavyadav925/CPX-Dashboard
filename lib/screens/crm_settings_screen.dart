@@ -168,7 +168,7 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const DashboardDrawer(),
+      drawer: const DashboardDrawer(currentPage: 'CRM Settings'),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: Column(

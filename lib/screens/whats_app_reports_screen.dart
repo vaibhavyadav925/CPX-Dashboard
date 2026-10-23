@@ -711,7 +711,10 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
   Widget build(BuildContext context) {
     final wide = MediaQuery.of(context).size.width >= 850;
     return Scaffold(
-      drawer: const DashboardDrawer(currentPage: 'Reports'),
+      drawer: const DashboardDrawer(
+        currentPage: 'Reports',
+        currentGroup: 'WhatsApp-App',
+      ),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(

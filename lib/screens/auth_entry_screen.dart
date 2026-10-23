@@ -78,18 +78,36 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     // On phones, use the edge-to-edge layout from the supplied reference.
     // The desktop/tablet layout below remains unchanged.
     if (width < 600) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          top: true,
-          bottom: true,
-          child: Column(
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: navy,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Column(
             children: [
-              _buildCompactBrand(),
+              // Navy background extends behind the phone status bar.
+              Container(
+                width: double.infinity,
+                color: navy,
+                child: SafeArea(
+                  bottom: false,
+                  child: SizedBox(
+                    height: 72,
+                    child: Center(child: _buildCompactBrand()),
+                  ),
+                ),
+              ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.zero,
-                  child: _buildFormPanel(wide: false),
+                child: SafeArea(
+                  top: false,
+                  bottom: true,
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.zero,
+                    child: _buildFormPanel(wide: false),
+                  ),
                 ),
               ),
             ],
@@ -155,14 +173,11 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     );
   }
 
-  Widget _buildBrandMark() => Container(
-    width: 48,
-    height: 48,
-    decoration: BoxDecoration(
-      color: navy,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: const Icon(Icons.sailing_rounded, color: Colors.white, size: 29),
+  Widget _buildBrandMark() => Image.asset(
+    'assets/logo.png',
+    width: 165,
+    height: 56,
+    fit: BoxFit.contain,
   );
 
   Widget _buildBrandPanel() => Container(
@@ -178,21 +193,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            _buildBrandMark(),
-            const SizedBox(width: 13),
-            const Text(
-              'CPXBOAT',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 23,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.1,
-              ),
-            ),
-          ],
-        ),
+        Row(children: [_buildBrandMark()]),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
@@ -254,37 +255,16 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     ),
   );
 
-  Widget _buildCompactBrand() => Container(
+  Widget _buildCompactBrand() => SizedBox(
     width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-    decoration: const BoxDecoration(color: navy),
-    child: Row(
-      children: [
-        const Icon(Icons.sailing_rounded, color: Colors.white, size: 25),
-        const SizedBox(width: 22),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'CPXBOAT',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 21,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Your messaging workspace',
-                style: TextStyle(color: Color(0xFFD4DEEC), fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-      ],
+    child: Center(
+      child: Image.asset(
+        'assets/logo.png',
+        width: 165,
+        height: 56,
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
+      ),
     ),
   );
 
@@ -361,7 +341,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
               controller: _nameController,
               textCapitalization: TextCapitalization.words,
               decoration: _fieldDecoration(
-                'Full name',
+                'Full Name',
                 Icons.person_outline_rounded,
               ),
               validator: (v) =>
