@@ -215,11 +215,11 @@ class CPXBoatApp extends StatelessWidget {
         dividerTheme: const DividerThemeData(
           color: Color(0xFFE5EAF2),
           thickness: 1,
-          space: 1,
+          space: 1,                                              
         ),
       ),
       home: const AuthEntryScreen(),
-    );
+    ); 
   }
 }
 
