@@ -79,6 +79,95 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     }
   }
 
+  Future<void> _showForgotPasswordDialog() async {
+    final recoveryEmailController = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+    final recoveryFormKey = GlobalKey<FormState>();
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF0B2140),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFF315C88)),
+        ),
+        title: const Text(
+          'Forgot password?',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+        ),
+        content: Form(
+          key: recoveryFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Enter your account email. This form is ready for an authentication service, but password reset emails cannot be sent until one is connected.',
+                style: TextStyle(
+                  color: Color(0xFFD4DEEC),
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: recoveryEmailController,
+                autofocus: false,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                style: const TextStyle(color: Colors.white),
+                decoration: _fieldDecoration(
+                  'Work email',
+                  Icons.mail_outline_rounded,
+                ),
+                validator: (value) {
+                  final email = (value ?? '').trim();
+                  if (email.isEmpty) return 'Enter your email address';
+                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+                    return 'Enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFFD4DEEC)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (!recoveryFormKey.currentState!.validate()) return;
+              Navigator.of(dialogContext).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Email validated. Connect an authentication service to send a real password reset link.',
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF03BBD9),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+
+    recoveryEmailController.dispose();
+  }
+
   InputDecoration _fieldDecoration(
     String label,
     IconData icon, {
@@ -120,34 +209,23 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     if (width < 600) {
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
-          statusBarColor: navy,
+          statusBarColor: Color(0xFF07152D),
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
         ),
         child: Scaffold(
-          backgroundColor: const Color(0xFF06162F),
+          // Keep the full phone canvas on one consistent navy base so
+          // the area below the scrollable form never appears as a separate band.
+          backgroundColor: const Color(0xFF06142D),
           body: Stack(
+            fit: StackFit.expand,
             children: [
-              // Use the same premium navy gradient as the desktop login page.
               const Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF07152D),
-                        Color(0xFF082750),
-                        Color(0xFF06142D),
-                      ],
-                    ),
-                  ),
-                ),
+                child: ColoredBox(color: Color(0xFF06142D)),
               ),
-              // Subtle decorative rings, scaled and positioned for mobile.
               Positioned(
-                left: -185,
-                bottom: -235,
+                left: -210,
+                bottom: -245,
                 child: Container(
                   width: 430,
                   height: 430,
@@ -159,7 +237,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                     ),
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF064E9B).withOpacity(.28),
+                        const Color(0xFF064E9B).withOpacity(.22),
                         Colors.transparent,
                       ],
                     ),
@@ -167,51 +245,45 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                 ),
               ),
               Positioned(
-                right: -245,
-                bottom: -260,
+                right: -250,
+                bottom: -275,
                 child: Container(
-                  width: 470,
-                  height: 470,
+                  width: 460,
+                  height: 460,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF00D6F2).withOpacity(.35),
+                      color: const Color(0xFF00D6F2).withOpacity(.32),
                       width: 2,
                     ),
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF078BC0).withOpacity(.22),
+                        const Color(0xFF078BC0).withOpacity(.18),
                         Colors.transparent,
                       ],
                     ),
                   ),
                 ),
               ),
-              // Keep the form scrollable on shorter phones and when signing up.
-              Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    color: Colors.transparent,
-                    child: SafeArea(
-                      bottom: false,
-                      child: SizedBox(
-                        height: 72,
-                        child: Center(child: _buildCompactBrand()),
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(child: _buildCompactBrand()),
+                          const SizedBox(height: 10),
+                          _buildMobileBrandIntro(),
+                          const SizedBox(height: 6),
+                          _buildFormPanel(wide: false),
+                        ],
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: SafeArea(
-                      top: false,
-                      bottom: true,
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.zero,
-                        child: _buildFormPanel(wide: false),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -330,6 +402,58 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     width: 165,
     height: 56,
     fit: BoxFit.contain,
+  );
+
+  Widget _buildMobileBrandIntro() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A416B).withOpacity(.55),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFF1A79BC).withOpacity(.65)),
+          ),
+          child: const Text(
+            'CUSTOMER COMMUNICATION PLATFORM',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF83EEFA),
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 20),
+      const Text(
+        'One workspace.',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 30,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.7,
+          height: 1.12,
+        ),
+      ),
+      const Text(
+        'Every conversation.',
+        style: TextStyle(
+          color: Color(0xFF05C5EB),
+          fontSize: 30,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -.7,
+          height: 1.12,
+        ),
+      ),
+      const SizedBox(height: 10),
+      const Text(
+        'Manage campaigns, messaging channels and customer engagement from your CPXBOAT dashboard.',
+        style: TextStyle(color: Color(0xFFC7D9F1), fontSize: 12, height: 1.5),
+      ),
+    ],
   );
 
   Widget _buildBrandPanel() => Padding(
@@ -464,7 +588,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   Widget _buildFormPanel({required bool wide}) => Padding(
     padding: EdgeInsets.symmetric(
       horizontal: wide ? 0 : 14,
-      vertical: wide ? 18 : 28,
+      vertical: wide ? 18 : 10,
     ),
     child: Form(
       key: _formKey,
@@ -604,13 +728,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Password recovery needs an authentication service.',
-                      ),
-                    ),
-                  ),
+                  onPressed: _showForgotPasswordDialog,
                   child: const Text(
                     'Forgot password?',
                     style: TextStyle(fontSize: 12),
