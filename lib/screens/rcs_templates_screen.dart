@@ -145,7 +145,7 @@ class _RCSTemplatesScreenState extends State<RCSTemplatesScreen> {
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: Text(compact ? 'New' : 'New template'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: teal,
+                        backgroundColor: panelAccent(context),
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(
                           horizontal: compact ? 12 : 18,
@@ -169,8 +169,12 @@ class _RCSTemplatesScreenState extends State<RCSTemplatesScreen> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         spacing: 8,
                         runSpacing: 5,
-                        children: const [
-                          Icon(Icons.sensors_rounded, color: teal, size: 15),
+                        children: [
+                          Icon(
+                            Icons.sensors_rounded,
+                            color: panelAccent(context),
+                            size: 15,
+                          ),
                           Text(
                             'Templates',
                             style: TextStyle(
@@ -302,7 +306,7 @@ class _RCSTemplatesScreenState extends State<RCSTemplatesScreen> {
                               dataRowMaxHeight: 66,
                               dividerThickness: .7,
                               headingRowColor: WidgetStateProperty.all(
-                                const Color(0xFF0B91AD),
+                                panelAccent(context),
                               ),
                               headingTextStyle: const TextStyle(
                                 color: Colors.white,

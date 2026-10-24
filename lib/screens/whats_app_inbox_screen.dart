@@ -151,7 +151,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
                           value: _assignment,
                           isDense: true,
                           isExpanded: true,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             color: Color(0xFF27364F),
                           ),
@@ -300,7 +300,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
                 )
               : ListView.separated(
                   itemCount: conversations.length,
-                  separatorBuilder: (_, __) => const Divider(
+                  separatorBuilder: (_, _) => const Divider(
                     height: 1,
                     indent: 54,
                     color: Color(0xFFE8EDF3),
@@ -339,9 +339,9 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
                               alignment: Alignment.center,
                               child: Text(
                                 item['initial']!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF0B91AD),
+                                  color: panelAccent(context),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -358,7 +358,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
                                           item['name']!,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                             color: Color(0xFF1D2A42),
@@ -368,7 +368,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
                                       const SizedBox(width: 4),
                                       Text(
                                         item['date']!,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 9,
                                           color: Color(0xFF77859A),
                                         ),
@@ -429,7 +429,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(
-            color: active ? const Color(0xFF0B91AD) : const Color(0xFFF0F3F8),
+            color: active ? panelAccent(context) : const Color(0xFFF0F3F8),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -455,7 +455,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: active ? const Color(0xFF0B91AD) : const Color(0xFFF0F3F8),
+            color: active ? panelAccent(context) : const Color(0xFFF0F3F8),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -488,10 +488,7 @@ class _WhatsAppInboxScreenState extends State<WhatsAppInboxScreen> {
                   backgroundColor: const Color(0xFFE5F4F6),
                   child: Text(
                     item['initial']!,
-                    style: const TextStyle(
-                      color: Color(0xFF0B91AD),
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: panelAccent(context), fontSize: 12),
                   ),
                 ),
                 const SizedBox(width: 10),

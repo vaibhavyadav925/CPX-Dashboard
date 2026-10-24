@@ -10,7 +10,7 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
   static const Color ink = Color(0xFF17243B);
   static const Color mutedText = Color(0xFF667892);
   static const Color line = Color(0xFFDCE3EE);
-  static const Color tealColor = Color(0xFF0B91AD);
+  Color get tealColor => PanelThemeController.instance.accentColor;
   final Set<String> days = {'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'};
   final List<String> holidays = [];
   final List<Map<String, String>> blocked = [];
@@ -317,7 +317,7 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
                               const SizedBox(height: 14),
                               label('Time zone'),
                               DropdownButtonFormField<String>(
-                                value: zone,
+                                initialValue: zone,
                                 decoration: decoration('Time zone'),
                                 items:
                                     const [
@@ -376,24 +376,27 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
                                           firstDate: DateTime(2020),
                                           lastDate: DateTime(2100),
                                         );
-                                        if (d != null)
+                                        if (d != null) {
                                           setState(
                                             () => holidayDraft =
                                                 '${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}',
                                           );
-                                        if (holidayDraft.isNotEmpty)
+                                        }
+                                        if (holidayDraft.isNotEmpty) {
                                           holiday.text = holidayDraft;
+                                        }
                                       },
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   smallButton('Add', () {
                                     if (holiday.text.trim().isNotEmpty &&
-                                        !holidays.contains(holiday.text.trim()))
+                                        !holidays.contains(holiday.text.trim())) {
                                       setState(() {
                                         holidays.add(holiday.text.trim());
                                         holiday.clear();
                                       });
+                                    }
                                   }),
                                 ],
                               ),
@@ -872,7 +875,7 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
                                   ),
                                 ),
                               )
-                              .toList(),
+                              ,
                         ],
                       ),
                     ),

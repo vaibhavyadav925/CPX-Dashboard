@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'screens/auth_entry_screen.dart';
 part 'screens/dashboard_screen.dart';
@@ -54,172 +57,326 @@ part 'screens/account_details_screen.dart';
 part 'screens/whats_app_chatbot_flow_screen.dart';
 
 const navy = Color(0xFF10192D);
-const teal = Color(0xFF0B91AD);
+const defaultPanelAccent = Color(0xFF0B91AD);
 const pageColor = Color(0xFFF5F7FB);
 const muted = Color(0xFF718096);
 const premiumBorder = Color(0xFFE6EBF2);
 const premiumSurface = Color(0xFFFFFFFF);
 
-class CPXBoatApp extends StatelessWidget {
+Color panelAccent(BuildContext context) =>
+    Theme.of(context).colorScheme.primary;
+
+Color cpxBoatLogoColorForBackground(Color backgroundColor) =>
+    ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.light
+    ? navy
+    : Colors.white;
+
+List<double> cpxBoatLogoColorMatrix(Color accent) {
+  const neutralProjection = 1 / 3;
+  final axisComponent = 1 / math.sqrt(3);
+  final source = [
+    defaultPanelAccent.r,
+    defaultPanelAccent.g,
+    defaultPanelAccent.b,
+  ];
+  final target = [accent.r, accent.g, accent.b];
+  final sourceMean = source.reduce((a, b) => a + b) / 3;
+  final targetMean = target.reduce((a, b) => a + b) / 3;
+  final sourceChroma = source.map((channel) => channel - sourceMean).toList();
+  final targetChroma = target.map((channel) => channel - targetMean).toList();
+  final sourceMagnitude = math.sqrt(
+    sourceChroma.fold<double>(0, (sum, channel) => sum + channel * channel),
+  );
+  final targetMagnitude = math.sqrt(
+    targetChroma.fold<double>(0, (sum, channel) => sum + channel * channel),
+  );
+
+  if (targetMagnitude < 0.001) {
+    return const [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
+  }
+
+  final sourceCrossTarget = [
+    sourceChroma[1] * targetChroma[2] - sourceChroma[2] * targetChroma[1],
+    sourceChroma[2] * targetChroma[0] - sourceChroma[0] * targetChroma[2],
+    sourceChroma[0] * targetChroma[1] - sourceChroma[1] * targetChroma[0],
+  ];
+  final sine =
+      sourceCrossTarget.fold<double>(
+        0,
+        (sum, channel) => sum + channel * axisComponent,
+      ) /
+      (sourceMagnitude * targetMagnitude);
+  var chromaDotProduct = 0.0;
+  for (var index = 0; index < 3; index++) {
+    chromaDotProduct += sourceChroma[index] * targetChroma[index];
+  }
+  final cosine = chromaDotProduct / (sourceMagnitude * targetMagnitude);
+  final chromaScale = targetMagnitude / sourceMagnitude;
+  final crossProductMatrix = [
+    [0.0, -axisComponent, axisComponent],
+    [axisComponent, 0.0, -axisComponent],
+    [-axisComponent, axisComponent, 0.0],
+  ];
+  final matrix = <double>[];
+
+  for (var row = 0; row < 3; row++) {
+    for (var column = 0; column < 3; column++) {
+      final projection = neutralProjection;
+      final identity = row == column ? 1.0 : 0.0;
+      final rotation =
+          projection +
+          chromaScale *
+              (cosine * (identity - projection) +
+                  sine * crossProductMatrix[row][column]);
+      final meanAdjustment =
+          (targetMean - sourceMean) *
+          sourceChroma[column] /
+          (sourceMagnitude * sourceMagnitude);
+      matrix.add(rotation + meanAdjustment);
+    }
+    matrix.addAll([0, 0]);
+  }
+
+  matrix.addAll(const [0, 0, 0, 1, 0]);
+  return matrix;
+}
+
+List<double> cpxBoatTopBarLogoColorMatrix(Color accent) =>
+    cpxBoatLogoColorMatrix(Color.lerp(accent, Colors.white, .5)!);
+
+void showApiPendingMessage(BuildContext context, String action) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(content: Text('Connect the API to enable $action.')),
+    );
+}
+
+class PanelThemeController extends ChangeNotifier {
+  PanelThemeController._();
+
+  static final instance = PanelThemeController._();
+  static const _preferenceKey = 'panel_accent_color';
+
+  Color _accentColor = defaultPanelAccent;
+  bool _hasUserSelection = false;
+
+  Color get accentColor => _accentColor;
+
+  Future<void> load() async {
+    final preferences = await SharedPreferences.getInstance();
+    final savedColor = preferences.getInt(_preferenceKey);
+    if (savedColor != null && !_hasUserSelection) {
+      _accentColor = Color(savedColor);
+      notifyListeners();
+    }
+  }
+
+  Future<void> setAccentColor(Color color) async {
+    _hasUserSelection = true;
+    if (_accentColor != color) {
+      _accentColor = color;
+      notifyListeners();
+    }
+
+    final preferences = await SharedPreferences.getInstance();
+    final saved = await preferences.setInt(_preferenceKey, color.toARGB32());
+    if (!saved) {
+      throw Exception('The panel theme could not be saved on this device.');
+    }
+  }
+}
+
+class CPXBoatApp extends StatefulWidget {
   const CPXBoatApp({super.key});
 
   @override
+  State<CPXBoatApp> createState() => _CPXBoatAppState();
+}
+
+class _CPXBoatAppState extends State<CPXBoatApp> {
+  @override
+  void initState() {
+    super.initState();
+    PanelThemeController.instance.load();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // title: 'CPXBOAT Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: pageColor,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: teal,
-          brightness: Brightness.light,
-          surface: Colors.white,
-        ),
-        fontFamily: 'Roboto',
-        visualDensity: VisualDensity.standard,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: navy,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            letterSpacing: .2,
-          ),
-          iconTheme: IconThemeData(color: Colors.white, size: 23),
-        ),
-        textTheme: const TextTheme(
-          headlineLarge: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: navy,
-            height: 1.2,
-          ),
-          headlineMedium: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: navy,
-            height: 1.2,
-          ),
-          headlineSmall: TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.w700,
-            color: navy,
-            height: 1.25,
-          ),
-          titleLarge: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: navy,
-          ),
-          titleMedium: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: navy,
-          ),
-          bodyLarge: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF253047),
-            height: 1.45,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 13,
-            color: Color(0xFF4F5D73),
-            height: 1.4,
-          ),
-          bodySmall: TextStyle(fontSize: 12, color: muted, height: 1.35),
-          labelLarge: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-        ),
-        cardTheme: CardThemeData(
-          color: Colors.white,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: premiumBorder),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFFF8FAFD),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 13,
-          ),
-          hintStyle: const TextStyle(color: Color(0xFF98A3B5), fontSize: 13),
-          labelStyle: const TextStyle(color: Color(0xFF526078), fontSize: 13),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFDCE3EE)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFDCE3EE)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: teal, width: 1.6),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE45D61)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: teal,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            minimumSize: const Size(46, 44),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            textStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+    return AnimatedBuilder(
+      animation: PanelThemeController.instance,
+      builder: (context, _) {
+        final accent = PanelThemeController.instance.accentColor;
+        return MaterialApp(
+          // title: 'CPXBOAT Dashboard',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            useMaterial3: true,
+            scaffoldBackgroundColor: pageColor,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: accent,
+              brightness: Brightness.light,
+              surface: Colors.white,
+            ).copyWith(primary: accent),
+            fontFamily: 'Roboto',
+            visualDensity: VisualDensity.standard,
+            primaryColor: accent,
+            appBarTheme: AppBarTheme(
+              backgroundColor: accent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: false,
+              titleTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: .2,
+              ),
+              iconTheme: IconThemeData(color: Colors.white, size: 23),
             ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            textTheme: const TextTheme(
+              headlineLarge: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: navy,
+                height: 1.2,
+              ),
+              headlineMedium: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: navy,
+                height: 1.2,
+              ),
+              headlineSmall: TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.w700,
+                color: navy,
+                height: 1.25,
+              ),
+              titleLarge: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: navy,
+              ),
+              titleMedium: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: navy,
+              ),
+              bodyLarge: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF253047),
+                height: 1.45,
+              ),
+              bodyMedium: TextStyle(
+                fontSize: 13,
+                color: Color(0xFF4F5D73),
+                height: 1.4,
+              ),
+              bodySmall: TextStyle(fontSize: 12, color: muted, height: 1.35),
+              labelLarge: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
+            cardTheme: CardThemeData(
+              color: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: premiumBorder),
+              ),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xFFF8FAFD),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 13,
+              ),
+              hintStyle: const TextStyle(
+                color: Color(0xFF98A3B5),
+                fontSize: 13,
+              ),
+              labelStyle: const TextStyle(
+                color: Color(0xFF526078),
+                fontSize: 13,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFDCE3EE)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFDCE3EE)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: accent, width: 1.6),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE45D61)),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                minimumSize: const Size(46, 44),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: navy,
+                minimumSize: const Size(42, 40),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 10,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                side: const BorderSide(color: Color(0xFFD9E1EC)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: accent,
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(9),
+                ),
+              ),
+            ),
+            dividerTheme: const DividerThemeData(
+              color: Color(0xFFE5EAF2),
+              thickness: 1,
+              space: 1,
             ),
           ),
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: navy,
-            minimumSize: const Size(42, 40),
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            textStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-            side: const BorderSide(color: Color(0xFFD9E1EC)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: teal,
-            textStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(9),
-            ),
-          ),
-        ),
-        dividerTheme: const DividerThemeData(
-          color: Color(0xFFE5EAF2),
-          thickness: 1,
-          space: 1,                                              
-        ),
-      ),
-      home: const AuthEntryScreen(),
-    ); 
+          home: const AuthEntryScreen(),
+        );
+      },
+    );
   }
 }
 
@@ -237,7 +394,7 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
 
   return AppBar(
     toolbarHeight: toolbarHeight,
-    backgroundColor: navy,
+    backgroundColor: panelAccent(context),
     foregroundColor: Colors.white,
     surfaceTintColor: Colors.transparent,
     elevation: 0,
@@ -263,11 +420,16 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
     title: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          'assets/logo.png',
-          width: 135,
-          height: 70,
-          fit: BoxFit.contain,
+        ColorFiltered(
+          colorFilter: ColorFilter.matrix(
+            cpxBoatTopBarLogoColorMatrix(panelAccent(context)),
+          ),
+          child: Image.asset(
+            'assets/logo.png',
+            width: 135,
+            height: 70,
+            fit: BoxFit.contain,
+          ),
         ),
       ],
     ),
@@ -483,7 +645,9 @@ class _CampaignName extends StatelessWidget {
               color: Color(0xFFE6F4F6),
               shape: BoxShape.circle,
             ),
-            child: const Center(child: Icon(Icons.chat, color: teal, size: 17)),
+            child: Center(
+              child: Icon(Icons.chat, color: panelAccent(context), size: 17),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -619,7 +783,7 @@ class _CampaignReportSidePanel extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            color: const Color(0xFF0B91AD),
+            color: panelAccent(context),
             padding: const EdgeInsets.fromLTRB(20, 16, 12, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,7 +845,7 @@ class _CampaignReportSidePanel extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Completed',
                         style: TextStyle(
                           color: Color(0xFF07945B),
@@ -758,12 +922,12 @@ class _CampaignReportSidePanel extends StatelessWidget {
                     color: const Color(0xFFE6F4F7),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Row(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.info_outline,
-                        color: Color(0xFF0B91AD),
+                        color: panelAccent(context),
                         size: 17,
                       ),
                       SizedBox(width: 8),
@@ -843,14 +1007,14 @@ class _CampaignReportSidePanel extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => onDownload('Download Report'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0B91AD),
-                          side: const BorderSide(color: Color(0xFF0B91AD)),
+                          foregroundColor: panelAccent(context),
+                          side: BorderSide(color: panelAccent(context)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Download Report',
                           style: TextStyle(
                             fontSize: 11,
@@ -864,14 +1028,14 @@ class _CampaignReportSidePanel extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => onDownload('Download Stats'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0B91AD),
-                          side: const BorderSide(color: Color(0xFF0B91AD)),
+                          foregroundColor: panelAccent(context),
+                          side: BorderSide(color: panelAccent(context)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Download Stats',
                           style: TextStyle(
                             fontSize: 11,
@@ -966,7 +1130,7 @@ class _CampaignProgressRow extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF17233C),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -985,17 +1149,14 @@ class _CampaignProgressRow extends StatelessWidget {
                   ),
                   child: Text(
                     tag!,
-                    style: const TextStyle(
-                      color: Color(0xFFF59E0B),
-                      fontSize: 8,
-                    ),
+                    style: TextStyle(color: Color(0xFFF59E0B), fontSize: 8),
                   ),
                 ),
               ],
               const Spacer(),
               Text(
                 _campaignNumber(value),
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF17233C),
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
@@ -1637,7 +1798,8 @@ class WhatsAppCampaignReportDetail extends StatelessWidget {
                     'Queue',
                   ].map(
                     (v) => OutlinedButton(
-                      onPressed: () {},
+                      onPressed: () =>
+                          showApiPendingMessage(context, 'report filtering'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         minimumSize: const Size(0, 34),
@@ -1670,7 +1832,7 @@ class WhatsAppCampaignReportDetail extends StatelessWidget {
                   dataRowMinHeight: 60,
                   dataRowMaxHeight: 70,
                   headingRowColor: WidgetStateProperty.all(
-                    const Color(0xFF0B91AD),
+                    panelAccent(context),
                   ),
                   headingTextStyle: const TextStyle(
                     color: Colors.white,
@@ -1710,7 +1872,7 @@ class WhatsAppCampaignReportDetail extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: r[1] == 'Delivered'
-                                        ? const Color(0xFF0B91AD)
+                                        ? panelAccent(context)
                                         : r[1] == 'Sent'
                                         ? const Color(0xFFEA8500)
                                         : const Color(0xFFEF4444),
@@ -1871,7 +2033,7 @@ class _RCSActivitySummaryCard extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFD9E2F1)),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
+                child: Text(
                   'Last 10 days  ⌄',
                   style: TextStyle(fontSize: 11, color: navy),
                 ),
@@ -2037,10 +2199,11 @@ class _RCSRecentCampaignsCard extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
-                  child: const Text(
+                  onPressed: () =>
+                      showApiPendingMessage(context, 'the full campaign list'),
+                  child: Text(
                     'View all →',
-                    style: TextStyle(color: teal, fontSize: 12),
+                    style: TextStyle(color: panelAccent(context), fontSize: 12),
                   ),
                 ),
               ],
@@ -2054,7 +2217,7 @@ class _RCSRecentCampaignsCard extends StatelessWidget {
               headingRowHeight: 42,
               dataRowMinHeight: 58,
               dataRowMaxHeight: 58,
-              headingRowColor: WidgetStateProperty.all(const Color(0xFF0B91AD)),
+              headingRowColor: WidgetStateProperty.all(panelAccent(context)),
               headingTextStyle: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -2298,7 +2461,7 @@ class _SMSTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     label,
-    style: const TextStyle(
+    style: TextStyle(
       color: Colors.white,
       fontSize: 11,
       fontWeight: FontWeight.w700,
@@ -2571,13 +2734,17 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
       backgroundColor: Colors.transparent,
 
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
 
             end: Alignment.bottomRight,
 
-            colors: [Color(0xFF0B1224), Color(0xFF151F38), Color(0xFF202D4B)],
+            colors: [
+              Color.lerp(panelAccent(context), Colors.black, .42)!,
+              Color.lerp(panelAccent(context), Colors.black, .24)!,
+              Color.lerp(panelAccent(context), Colors.black, .08)!,
+            ],
 
             stops: [0.0, 0.58, 1.0],
           ),
@@ -2590,11 +2757,16 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
                 padding: const EdgeInsets.fromLTRB(20, 18, 16, 17),
                 child: Row(
                   children: [
-                    Image.asset(
-                      'assets/logo.png',
-                      width: 130,
-                      height: 50,
-                      fit: BoxFit.contain,
+                    ColorFiltered(
+                      colorFilter: ColorFilter.matrix(
+                        cpxBoatLogoColorMatrix(panelAccent(context)),
+                      ),
+                      child: Image.asset(
+                        'assets/logo.png',
+                        width: 130,
+                        height: 50,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const Spacer(),
                     IconButton(
@@ -2865,7 +3037,7 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
           child: Container(
             decoration: isActive
                 ? BoxDecoration(
-                    color: teal,
+                    color: panelAccent(context),
                     borderRadius: BorderRadius.circular(10),
                   )
                 : null,
@@ -2923,7 +3095,7 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
                   child: Text(
                     item,
 
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xFF7D8AA4),
 
                       fontSize: 10,
@@ -2947,7 +3119,7 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
               padding: const EdgeInsets.only(left: 9, bottom: 3),
 
               child: Material(
-                color: active ? teal : Colors.transparent,
+                color: active ? panelAccent(context) : Colors.transparent,
 
                 borderRadius: BorderRadius.circular(9),
 
@@ -3565,7 +3737,12 @@ class _OnboardChannelCard extends StatelessWidget {
           if (connected) const SizedBox(height: 5),
           if (completed || connected)
             OutlinedButton(
-              onPressed: () {},
+              onPressed: connected
+                  ? () => showApiPendingMessage(
+                      context,
+                      'connecting another account',
+                    )
+                  : null,
               style: OutlinedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 minimumSize: const Size(0, 25),
@@ -3586,7 +3763,7 @@ class _OnboardChannelCard extends StatelessWidget {
             )
           else
             OutlinedButton(
-              onPressed: () {},
+              onPressed: () => showApiPendingMessage(context, 'channel setup'),
               style: OutlinedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 minimumSize: const Size(0, 25),
@@ -3796,9 +3973,9 @@ class _KeyStep extends StatelessWidget {
           ),
           child: Text(
             n,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 9,
-              color: teal,
+              color: panelAccent(context),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -3850,7 +4027,7 @@ class _PromptCard extends StatelessWidget {
             color: const Color(0xFFE4F4F8),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Icon(icon, size: 13, color: teal),
+          child: Icon(icon, size: 13, color: panelAccent(context)),
         ),
         const SizedBox(width: 7),
         Expanded(
@@ -3879,6 +4056,10 @@ class _PromptCard extends StatelessWidget {
 }
 
 class _CRMOverviewChartPainter extends CustomPainter {
+  final Color accent;
+
+  const _CRMOverviewChartPainter({required this.accent});
+
   @override
   void paint(Canvas canvas, Size size) {
     final grid = Paint()
@@ -3898,7 +4079,7 @@ class _CRMOverviewChartPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(canvas, Offset(2, y - 6));
     }
-    final bar = Paint()..color = const Color(0xFF0B91AD);
+    final bar = Paint()..color = accent;
     final top = 8 + chartHeight * 3 / 4;
     canvas.drawRRect(
       RRect.fromRectAndCorners(
@@ -3920,7 +4101,8 @@ class _CRMOverviewChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CRMOverviewChartPainter oldDelegate) =>
+      accent != oldDelegate.accent;
 }
 
 class _UnknownStatusChip extends StatelessWidget {
@@ -3969,10 +4151,10 @@ class _ChatbotKeyStep extends StatelessWidget {
           ),
           child: Text(
             number,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0B91AD),
+              color: panelAccent(context),
             ),
           ),
         ),

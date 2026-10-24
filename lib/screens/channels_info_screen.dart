@@ -52,7 +52,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
     ),
     child: Row(
       children: [
-        Icon(icon, size: 14, color: teal),
+        Icon(icon, size: 14, color: panelAccent(context)),
         const SizedBox(width: 5),
         Text(
           text,
@@ -150,9 +150,9 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                   border: Border.all(color: const Color(0xFFB7E7EF)),
                   borderRadius: BorderRadius.circular(7),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.link, size: 14, color: teal),
+                    Icon(Icons.link, size: 14, color: panelAccent(context)),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -196,7 +196,11 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                       )
                     : Row(
                         children: [
-                          const Icon(Icons.hub_outlined, size: 20, color: teal),
+                          Icon(
+                            Icons.hub_outlined,
+                            size: 20,
+                            color: panelAccent(context),
+                          ),
                           const SizedBox(width: 10),
                           Expanded(child: _fallbackInfo()),
                           _fallbackButton(),
@@ -232,7 +236,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
     onPressed: () => ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Fallback setup selected'))),
     style: FilledButton.styleFrom(
-      backgroundColor: teal,
+      backgroundColor: panelAccent(context),
       foregroundColor: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
@@ -245,7 +249,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
   );
 
   Widget _responsiveGrid(bool compact, List<Widget> children) {
-    if (compact)
+    if (compact) {
       return Column(
         children: children
             .map(
@@ -254,6 +258,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
             )
             .toList(),
       );
+    }
     return LayoutBuilder(
       builder: (context, box) {
         final columns = box.maxWidth < 950 ? 2 : 3;
@@ -688,7 +693,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
             headingRowHeight: 36,
             dataRowMinHeight: 56,
             dataRowMaxHeight: 65,
-            headingRowColor: WidgetStateProperty.all(const Color(0xFF0B91AD)),
+            headingRowColor: WidgetStateProperty.all(panelAccent(context)),
             columns: const [
               DataColumn(
                 label: Text(
@@ -844,17 +849,26 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                           children: [
                             IconButton(
                               tooltip: 'Refresh',
-                              onPressed: () {},
+                              onPressed: () => showApiPendingMessage(
+                                context,
+                                'channel refresh',
+                              ),
                               icon: const Icon(Icons.refresh_rounded, size: 15),
                             ),
                             IconButton(
                               tooltip: 'Sync',
-                              onPressed: () {},
+                              onPressed: () => showApiPendingMessage(
+                                context,
+                                'channel synchronization',
+                              ),
                               icon: const Icon(Icons.sync_rounded, size: 15),
                             ),
                             IconButton(
                               tooltip: 'Disconnect',
-                              onPressed: () {},
+                              onPressed: () => showApiPendingMessage(
+                                context,
+                                'channel disconnection',
+                              ),
                               icon: const Icon(
                                 Icons.link_off_rounded,
                                 size: 15,

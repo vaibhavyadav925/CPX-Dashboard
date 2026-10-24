@@ -47,7 +47,7 @@ class SMSScheduledScreen extends StatelessWidget {
                     children: [
                       Container(
                         height: 41,
-                        color: teal,
+                        color: panelAccent(context),
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: const Row(
                           children: [

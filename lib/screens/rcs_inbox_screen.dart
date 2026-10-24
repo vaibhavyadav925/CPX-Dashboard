@@ -148,7 +148,7 @@ class _RCSInboxScreenState extends State<RCSInboxScreen> {
                         width: 145,
                         height: 34,
                         child: DropdownButtonFormField<String>(
-                          value: _assignment,
+                          initialValue: _assignment,
                           isExpanded: true,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(
@@ -213,7 +213,7 @@ class _RCSInboxScreenState extends State<RCSInboxScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _assignment,
+                        initialValue: _assignment,
                         isExpanded: true,
                         decoration: InputDecoration(
                           isDense: true,
@@ -345,7 +345,7 @@ class _RCSInboxScreenState extends State<RCSInboxScreen> {
                           Expanded(
                             child: ListView.separated(
                               itemCount: filtered.length,
-                              separatorBuilder: (_, __) => const Divider(
+                              separatorBuilder: (_, _) => const Divider(
                                 height: 1,
                                 indent: 54,
                                 color: Color(0xFFE8EDF3),

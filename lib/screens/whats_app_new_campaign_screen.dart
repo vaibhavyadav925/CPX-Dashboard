@@ -49,7 +49,7 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(9),
-      borderSide: const BorderSide(color: teal, width: 1.3),
+      borderSide: BorderSide(color: panelAccent(context), width: 1.3),
     ),
   );
 
@@ -350,7 +350,9 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
                             horizontal: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: selected ? teal : Colors.transparent,
+                            color: selected
+                                ? panelAccent(context)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(7),
                           ),
                           child: Text(
@@ -418,10 +420,10 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.upload_file_outlined,
                         size: 30,
-                        color: teal,
+                        color: panelAccent(context),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -570,7 +572,7 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
                     }
                   : null,
               style: FilledButton.styleFrom(
-                backgroundColor: teal,
+                backgroundColor: panelAccent(context),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
@@ -681,20 +683,26 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFF2FAFC) : Colors.white,
-          border: Border.all(color: selected ? teal : const Color(0xFFDCE3EE)),
+          border: Border.all(
+            color: selected ? panelAccent(context) : const Color(0xFFDCE3EE),
+          ),
           borderRadius: BorderRadius.circular(9),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: selected ? teal : muted),
+            Icon(
+              icon,
+              size: 16,
+              color: selected ? panelAccent(context) : muted,
+            ),
             const SizedBox(width: 7),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: selected ? teal : muted,
+                color: selected ? panelAccent(context) : muted,
               ),
             ),
             const SizedBox(width: 7),
@@ -715,9 +723,11 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
       icon: Icon(icon, size: 16),
       label: Text(label, style: const TextStyle(fontSize: 12)),
       style: OutlinedButton.styleFrom(
-        foregroundColor: selected ? teal : muted,
+        foregroundColor: selected ? panelAccent(context) : muted,
         backgroundColor: selected ? const Color(0xFFF2FAFC) : Colors.white,
-        side: BorderSide(color: selected ? teal : const Color(0xFFDCE3EE)),
+        side: BorderSide(
+          color: selected ? panelAccent(context) : const Color(0xFFDCE3EE),
+        ),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       ),
     );

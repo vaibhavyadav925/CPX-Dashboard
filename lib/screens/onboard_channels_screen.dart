@@ -31,8 +31,8 @@ class OnboardChannelsScreen extends StatelessWidget {
                     vertical: wide ? 18 : 16,
                   ),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0B91AD), Color(0xFF0B91AD)],
+                    gradient: LinearGradient(
+                      colors: [panelAccent(context), panelAccent(context)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -184,14 +184,14 @@ class OnboardChannelsScreen extends StatelessWidget {
                     runSpacing: 12,
                     spacing: 16,
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 390,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.hub_outlined,
-                              color: Color(0xFF0B91AD),
+                              color: panelAccent(context),
                               size: 23,
                             ),
                             SizedBox(width: 12),
@@ -223,9 +223,12 @@ class OnboardChannelsScreen extends StatelessWidget {
                         ),
                       ),
                       FilledButton.icon(
-                        onPressed: () {},
+                        onPressed: () => showApiPendingMessage(
+                          context,
+                          'channel onboarding',
+                        ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: teal,
+                          backgroundColor: panelAccent(context),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,

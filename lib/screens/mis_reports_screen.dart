@@ -246,7 +246,7 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
 
                         size: 19,
 
-                        color: active ? teal : Colors.white70,
+                        color: active ? panelAccent(context) : Colors.white70,
                       ),
 
                       const SizedBox(height: 3),
@@ -261,7 +261,7 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
                         style: TextStyle(
                           fontSize: 8,
 
-                          color: active ? teal : Colors.white70,
+                          color: active ? panelAccent(context) : Colors.white70,
 
                           fontWeight: active
                               ? FontWeight.bold
@@ -296,7 +296,9 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
               onPressed: () => setState(() => reportChannel = tab),
 
               style: TextButton.styleFrom(
-                backgroundColor: selected ? teal : Colors.transparent,
+                backgroundColor: selected
+                    ? panelAccent(context)
+                    : Colors.transparent,
 
                 foregroundColor: selected
                     ? Colors.white
@@ -596,7 +598,7 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
 
       ('Delivered', delivered, const Color(0xFF16A878), Icons.done_all_rounded),
 
-      ('Read', read, const Color(0xFF0B91AD), Icons.visibility_outlined),
+      ('Read', read, panelAccent(context), Icons.visibility_outlined),
 
       ('Failed', failed, const Color(0xFFEF4444), Icons.error_outline_rounded),
 
@@ -723,7 +725,7 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
           constraints: BoxConstraints(minWidth: wide ? 950 : 920),
 
           child: DataTable(
-            headingRowColor: WidgetStateProperty.all(teal),
+            headingRowColor: WidgetStateProperty.all(panelAccent(context)),
 
             headingTextStyle: const TextStyle(
               color: Colors.white,
@@ -761,12 +763,12 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
                             : i == 6
                             ? const Color(0xFF16A878)
                             : i == 7
-                            ? const Color(0xFF0B91AD)
+                            ? panelAccent(context)
                             : i == 8
                             ? const Color(0xFFEF4444)
                             : i == 9
                             ? const Color(0xFF8B5CF6)
-                            : const Color(0xFF0B91AD);
+                            : panelAccent(context);
 
                         return DataCell(
                           Container(

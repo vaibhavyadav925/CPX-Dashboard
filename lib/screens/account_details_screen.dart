@@ -144,9 +144,9 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     color: const Color(0xFFE5F4F7),
                     borderRadius: BorderRadius.circular(7),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.account_balance_wallet_outlined,
-                    color: Color(0xFF0B91AD),
+                    color: panelAccent(context),
                     size: 17,
                   ),
                 ),
@@ -318,7 +318,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF0B91AD), width: 1.5),
+          borderSide: BorderSide(color: panelAccent(context), width: 1.5),
         ),
       );
 
@@ -435,7 +435,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                           const SizedBox(width: 8),
                           FilledButton(
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B91AD),
+                              backgroundColor: panelAccent(context),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(7),
                               ),
@@ -558,7 +558,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: countryValue,
+                              initialValue: countryValue,
                               isExpanded: true,
                               decoration: _inputDecoration('Country'),
                               items: const [
@@ -630,7 +630,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                           const SizedBox(width: 8),
                           FilledButton(
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B91AD),
+                              backgroundColor: panelAccent(context),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(7),
                               ),

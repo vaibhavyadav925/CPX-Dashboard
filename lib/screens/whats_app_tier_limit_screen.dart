@@ -57,7 +57,7 @@ class WhatsAppTierLimitScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 12, color: muted),
                   ),
                   const SizedBox(height: 24),
-                  const Row(
+                  Row(
                     children: [
                       DecoratedBox(
                         decoration: BoxDecoration(
@@ -69,7 +69,7 @@ class WhatsAppTierLimitScreen extends StatelessWidget {
                           height: 46,
                           child: Icon(
                             Icons.speed_rounded,
-                            color: teal,
+                            color: panelAccent(context),
                             size: 25,
                           ),
                         ),
@@ -126,7 +126,9 @@ class WhatsAppTierLimitScreen extends StatelessWidget {
                                   ? const Color(0xFFF1FAFC)
                                   : Colors.white,
                               border: Border.all(
-                                color: current ? teal : const Color(0xFFDCE2ED),
+                                color: current
+                                    ? panelAccent(context)
+                                    : const Color(0xFFDCE2ED),
                               ),
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -138,7 +140,9 @@ class WhatsAppTierLimitScreen extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: current ? teal : muted,
+                                    color: current
+                                        ? panelAccent(context)
+                                        : muted,
                                     fontWeight: current
                                         ? FontWeight.w700
                                         : FontWeight.w500,

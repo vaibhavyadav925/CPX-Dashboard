@@ -142,7 +142,7 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                     ),
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: teal,
+                    backgroundColor: panelAccent(context),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
@@ -197,7 +197,7 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                   width: 174,
                   height: 38,
                   child: DropdownButtonFormField<String>(
-                    value: _status,
+                    initialValue: _status,
                     isExpanded: true,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
@@ -255,7 +255,9 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                         minWidth: compact ? 950 : width - (compact ? 24 : 44),
                       ),
                       child: DataTable(
-                        headingRowColor: WidgetStateProperty.all(teal),
+                        headingRowColor: WidgetStateProperty.all(
+                          panelAccent(context),
+                        ),
                         headingRowHeight: 42,
                         dataRowMinHeight: 52,
                         dataRowMaxHeight: 62,
@@ -295,7 +297,7 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                               DataCell(
                                 Checkbox(
                                   value: _selectedRows.contains(index),
-                                  activeColor: teal,
+                                  activeColor: panelAccent(context),
                                   onChanged: (v) => setState(() {
                                     if (v == true) {
                                       _selectedRows.add(index);
@@ -322,7 +324,7 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                                         ),
                                         child: Text(
                                           row['name']!,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: muted,
                                             fontSize: 12,
                                           ),
@@ -338,8 +340,8 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                                           children: [
                                             Text(
                                               row['name']!,
-                                              style: const TextStyle(
-                                                color: teal,
+                                              style: TextStyle(
+                                                color: panelAccent(context),
                                                 fontSize: 12,
                                               ),
                                             ),

@@ -70,7 +70,9 @@ class WhatsAppScheduledScreen extends StatelessWidget {
                   dataRowMinHeight: 43,
                   dataRowMaxHeight: 52,
                   dividerThickness: 0.7,
-                  headingRowColor: WidgetStateProperty.all(teal),
+                  headingRowColor: WidgetStateProperty.all(
+                    panelAccent(context),
+                  ),
                   headingTextStyle: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,

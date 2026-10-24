@@ -233,12 +233,15 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                           style: TextStyle(fontSize: 11.5),
                         ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: teal,
+                          backgroundColor: panelAccent(context),
                           foregroundColor: Colors.white,
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () {},
+                        onPressed: () => showApiPendingMessage(
+                          context,
+                          'the external AI provider console',
+                        ),
                         icon: const Icon(Icons.open_in_new, size: 13),
                         label: const Text(
                           'Open Anthropic console',
@@ -292,8 +295,8 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0B91AD), Color(0xFF8B5CF6)],
+                        gradient: LinearGradient(
+                          colors: [panelAccent(context), Color(0xFF8B5CF6)],
                         ),
                         borderRadius: BorderRadius.circular(11),
                       ),
@@ -417,8 +420,8 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0B91AD), Color(0xFF8B5CF6)],
+                      gradient: LinearGradient(
+                        colors: [panelAccent(context), Color(0xFF8B5CF6)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -544,11 +547,14 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 FilledButton.icon(
-                                  onPressed: () {},
+                                  onPressed: () => showApiPendingMessage(
+                                    context,
+                                    'AI chat creation',
+                                  ),
                                   icon: const Icon(Icons.add, size: 15),
                                   label: const Text('New chat'),
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: teal,
+                                    backgroundColor: panelAccent(context),
                                   ),
                                 ),
                                 const SizedBox(height: 18),

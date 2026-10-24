@@ -13,20 +13,23 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
     Color(0xFF2864E8),
     Color(0xFF0B91AD),
     Color(0xFF16A34A),
-    Color(0xFFD18A00),
+    Color(0xFF9A6700),
     Color(0xFFEA580C),
     Color(0xFFDC2626),
     Color(0xFFDB2777),
     Color(0xFF7C3AED),
     Color(0xFF111827),
   ];
-  Color _selectedColor = const Color(0xFF0B91AD);
-  Color _appliedColor = const Color(0xFF0B91AD);
   bool _soundOn = true;
 
   @override
   Widget build(BuildContext context) {
-    final accent = _appliedColor;
+    final accent = panelAccent(context);
+    final colorHex = accent
+        .toARGB32()
+        .toRadixString(16)
+        .substring(2)
+        .toUpperCase();
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       drawer: const DashboardDrawer(currentPage: 'Panel Theme'),
@@ -62,7 +65,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                 ),
                 const SizedBox(height: 3),
                 const Text(
-                  'Pick an accent color for your panel — applies to buttons, links, active navigation, and table headers.',
+                  'Choose a color for the panel header, navigation, buttons, links, and tables. Changes apply immediately.',
                   style: TextStyle(fontSize: 11, color: muted),
                 ),
                 const SizedBox(height: 20),
@@ -73,7 +76,10 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                   children: [
                     ..._colors.map(
                       (color) => InkWell(
-                        onTap: () => setState(() => _selectedColor = color),
+                        key: ValueKey(
+                          'panel-theme-color-${color.toARGB32().toRadixString(16)}',
+                        ),
+                        onTap: () => _saveAccentColor(color),
                         customBorder: const CircleBorder(),
                         child: Container(
                           width: 29,
@@ -83,11 +89,11 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 1.5),
                           ),
-                          child: _selectedColor == color
-                              ? const Icon(
+                          child: accent == color
+                              ? Icon(
                                   Icons.check,
                                   size: 17,
-                                  color: Colors.white,
+                                  color: _textColorFor(color),
                                 )
                               : null,
                         ),
@@ -104,7 +110,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                         final picked = await showDialog<Color>(
                           context: context,
                           builder: (context) {
-                            Color temp = _selectedColor;
+                            Color temp = accent;
                             return StatefulBuilder(
                               builder: (context, setDialogState) => AlertDialog(
                                 title: const Text('Choose accent color'),
@@ -152,8 +158,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                             );
                           },
                         );
-                        if (picked != null)
-                          setState(() => _selectedColor = picked);
+                        if (picked != null) _saveAccentColor(picked);
                       },
                       child: Container(
                         width: 29,
@@ -188,23 +193,6 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                   runSpacing: 8,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accent,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      onPressed: () =>
-                          setState(() => _appliedColor = _selectedColor),
-                      icon: const Icon(Icons.palette_outlined, size: 14),
-                      label: const Text(
-                        'Apply',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF14213A),
@@ -213,10 +201,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                      onPressed: () => setState(() {
-                        _selectedColor = const Color(0xFF0B91AD);
-                        _appliedColor = const Color(0xFF0B91AD);
-                      }),
+                      onPressed: () => _saveAccentColor(defaultPanelAccent),
                       icon: const Icon(Icons.refresh, size: 14),
                       label: const Text(
                         'Reset to default',
@@ -224,8 +209,12 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                       ),
                     ),
                     Text(
-                      'Current: #${_appliedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                      'Current: #$colorHex',
                       style: const TextStyle(fontSize: 10, color: muted),
+                    ),
+                    const Text(
+                      'Changes apply instantly across the panel.',
+                      style: TextStyle(fontSize: 10, color: muted),
                     ),
                   ],
                 ),
@@ -245,7 +234,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                       SizedBox(width: 7),
                       Expanded(
                         child: Text(
-                          'This only recolors the accent used across the panel — buttons, links, active navigation, and table headers. Page backgrounds, text, and status colors (success/warning/error) stay the same for everyone. Very light colors near white aren’t offered, since white text on the buttons and navigation would become unreadable.',
+                          'Your selected color updates the panel header, navigation, buttons, links, active controls, and table headers immediately. Page backgrounds, text, and status colors remain unchanged.',
                           style: TextStyle(fontSize: 9, color: muted),
                         ),
                       ),
@@ -393,4 +382,20 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
     ),
     child: child,
   );
+
+  Color _textColorFor(Color color) =>
+      ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+      ? Colors.white
+      : const Color(0xFF14213A);
+
+  Future<void> _saveAccentColor(Color color) async {
+    try {
+      await PanelThemeController.instance.setAccentColor(color);
+    } on Exception catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save the panel theme: $error')),
+      );
+    }
+  }
 }

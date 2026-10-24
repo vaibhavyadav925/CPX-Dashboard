@@ -128,7 +128,7 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: mode == label
-                                          ? const Color(0xFF0B91AD)
+                                          ? panelAccent(context)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(7),
                                     ),
@@ -216,7 +216,7 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                       height: 40,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0B91AD),
+                          backgroundColor: panelAccent(context),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(7),
@@ -232,18 +232,20 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                             )) {
                               final parts = line.split(',');
                               final phone = parts.first.trim();
-                              if (phone.isNotEmpty)
+                              if (phone.isNotEmpty) {
                                 entries.add({
                                   'phone': phone,
                                   'name': parts.length > 1
                                       ? parts.sublist(1).join(',').trim()
                                       : '',
                                 });
+                              }
                             }
                           }
                           setState(() {
-                            if (!_groups.contains(groupName))
+                            if (!_groups.contains(groupName)) {
                               _groups.add(groupName);
+                            }
                             _contacts[groupName] = entries;
                             _selected = groupName;
                           });
@@ -288,7 +290,7 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: Color(0xFF0B91AD), width: 1.5),
+      borderSide: BorderSide(color: panelAccent(context), width: 1.5),
     ),
   );
 
@@ -336,7 +338,7 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                   icon: const Icon(Icons.add, size: 17),
                   label: const Text('New group'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0B91AD),
+                    backgroundColor: panelAccent(context),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(
                       horizontal: isMobile ? 10 : 16,
@@ -429,11 +431,12 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                                                   setState(() {
                                                     _groups.remove(group);
                                                     _contacts.remove(group);
-                                                    if (_selected == group)
+                                                    if (_selected == group) {
                                                       _selected =
                                                           _groups.isEmpty
                                                           ? ''
                                                           : _groups.first;
+                                                    }
                                                   });
                                                 },
                                                 child: const Padding(
@@ -484,7 +487,7 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                                   child: Column(
                                     children: [
                                       Container(
-                                        color: const Color(0xFF0B91AD),
+                                        color: panelAccent(context),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 13,

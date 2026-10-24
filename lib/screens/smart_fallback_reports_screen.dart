@@ -29,7 +29,7 @@ class _SmartFallbackReportsScreenState
     final width = MediaQuery.of(context).size.width;
     final compact = width < 850;
     const line = Color(0xFFDCE2ED);
-    const cyan = Color(0xFF0B91AD);
+    final cyan = panelAccent(context);
 
     return Scaffold(
       drawer: const DashboardDrawer(
@@ -155,7 +155,7 @@ class _SmartFallbackReportsScreenState
                   SizedBox(
                     width: 174,
                     child: DropdownButtonFormField<String>(
-                      value: _status,
+                      initialValue: _status,
                       isDense: true,
                       decoration: InputDecoration(
                         filled: true,
@@ -421,7 +421,7 @@ class _SmartFallbackReportsScreenState
                 ),
                 const SizedBox(height: 4),
                 DropdownButtonFormField<String>(
-                  value: _reportType,
+                  initialValue: _reportType,
                   isDense: true,
                   isExpanded: true,
                   decoration: InputDecoration(
@@ -536,7 +536,7 @@ class _SmartFallbackReportsScreenState
             ),
           ),
           const SizedBox(width: 10),
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(bottom: 7),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -551,7 +551,7 @@ class _SmartFallbackReportsScreenState
                   'Developer API',
                   style: TextStyle(
                     fontSize: 10,
-                    color: Color(0xFF0B91AD),
+                    color: panelAccent(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -667,7 +667,7 @@ class _SmartFallbackReportsScreenState
                 const SizedBox(height: 6),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     height: 1,
                     fontWeight: FontWeight.w800,

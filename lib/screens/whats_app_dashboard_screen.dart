@@ -46,7 +46,7 @@ class WhatsAppDashboardScreen extends StatelessWidget {
                     '₹6,278',
                     'Available balance',
                     Icons.account_balance_wallet_outlined,
-                    teal,
+                    panelAccent(context),
                   ),
                   (
                     'Total Campaigns',
@@ -220,7 +220,7 @@ class WhatsAppDashboardScreen extends StatelessWidget {
                             );
                           },
                           style: TextButton.styleFrom(
-                            foregroundColor: teal,
+                            foregroundColor: panelAccent(context),
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             minimumSize: const Size(0, 32),
                           ),
@@ -246,7 +246,7 @@ class WhatsAppDashboardScreen extends StatelessWidget {
                       dataRowMaxHeight: 72,
                       dividerThickness: 0.7,
                       headingRowColor: WidgetStateProperty.all(
-                        const Color(0xFF0B91AD),
+                        panelAccent(context),
                       ),
                       headingTextStyle: const TextStyle(
                         color: Colors.white,

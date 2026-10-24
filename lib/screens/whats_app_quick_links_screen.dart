@@ -154,7 +154,7 @@ class _WhatsAppQuickLinksScreenState extends State<WhatsAppQuickLinksScreen> {
                   SelectableText(
                     _link,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 12, color: teal),
+                    style: TextStyle(fontSize: 12, color: panelAccent(context)),
                   ),
                   const SizedBox(height: 8),
                   Wrap(

@@ -185,7 +185,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             color: navy,
             fontWeight: FontWeight.w600,
@@ -200,7 +200,8 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
       alignment: Alignment.center,
       children: [
         IconButton(
-          onPressed: () {},
+          onPressed: () =>
+              showApiPendingMessage(context, 'this account shortcut'),
           padding: EdgeInsets.zero,
           icon: Icon(
             icon,
@@ -224,7 +225,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
               alignment: Alignment.center,
               child: Text(
                 badge,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 9,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -273,12 +274,12 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: teal.withValues(alpha: .11),
+              color: panelAccent(context).withValues(alpha: .11),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.account_balance_wallet_outlined,
-              color: teal,
+              color: panelAccent(context),
               size: 20,
             ),
           ),
@@ -346,7 +347,9 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: selected ? teal : Colors.transparent,
+                      color: selected
+                          ? panelAccent(context)
+                          : Colors.transparent,
                       width: 2,
                     ),
                   ),
@@ -355,7 +358,9 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                   labels[i],
                   style: TextStyle(
                     fontSize: 12,
-                    color: selected ? teal : const Color(0xFF58657D),
+                    color: selected
+                        ? panelAccent(context)
+                        : const Color(0xFF58657D),
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
@@ -372,7 +377,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
     children: [
       Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.w800,
           color: navy,
@@ -450,7 +455,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                     height: 38,
                     child: DropdownButtonFormField<String>(
                       isExpanded: true,
-                      value: transactionFilter,
+                      initialValue: transactionFilter,
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -523,7 +528,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                   width: 160,
                   height: 38,
                   child: DropdownButtonFormField<String>(
-                    value: transactionFilter,
+                    initialValue: transactionFilter,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 11,
@@ -581,7 +586,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
               headingRowHeight: 40,
               dataRowMinHeight: 53,
               dataRowMaxHeight: 66,
-              headingRowColor: WidgetStateProperty.all(const Color(0xFF0B91AD)),
+              headingRowColor: WidgetStateProperty.all(panelAccent(context)),
               border: TableBorder.all(
                 color: const Color(0xFFD9E0EB),
                 width: .6,
@@ -658,9 +663,9 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                             children: [
                               Text(
                                 r['date']!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: teal,
+                                  color: panelAccent(context),
                                 ),
                               ),
                               Text(
@@ -678,7 +683,10 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                         DataCell(
                           Text(
                             r['by']!,
-                            style: const TextStyle(fontSize: 11, color: teal),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: panelAccent(context),
+                            ),
                           ),
                         ),
                       ],
@@ -761,9 +769,12 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         '08 Oct 2026',
-                        style: TextStyle(fontSize: 10, color: teal),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: panelAccent(context),
+                        ),
                       ),
                       Text(
                         '12:${38 - i} pm',
@@ -849,9 +860,13 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.card_giftcard_outlined, color: teal, size: 17),
+                    Icon(
+                      Icons.card_giftcard_outlined,
+                      color: panelAccent(context),
+                      size: 17,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Free service messages this month',
@@ -931,7 +946,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                     icon: const Icon(Icons.search, size: 15),
                     label: const Text('Apply'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF0B91AD),
+                      backgroundColor: panelAccent(context),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(7),
@@ -949,7 +964,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                   dataRowMaxHeight: 54,
                   columnSpacing: compact ? 24 : 70,
                   headingRowColor: WidgetStateProperty.all(
-                    const Color(0xFF0B91AD),
+                    panelAccent(context),
                   ),
                   border: TableBorder.all(
                     color: const Color(0xFFD9E0EB),
@@ -984,7 +999,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
       whatsapp ? 'Charged Messages' : 'Conversation Replies',
       whatsapp ? '0' : '24',
       Icons.forum_outlined,
-      teal,
+      panelAccent(context),
     );
     final b = _statCard(
       'Total Charged (₹)',
@@ -1129,10 +1144,12 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       minimumSize: const Size(0, 28),
-                      foregroundColor: walletAmount == n ? teal : muted,
+                      foregroundColor: walletAmount == n
+                          ? panelAccent(context)
+                          : muted,
                       side: BorderSide(
                         color: walletAmount == n
-                            ? teal
+                            ? panelAccent(context)
                             : const Color(0xFFD9E0EB),
                       ),
                       shape: RoundedRectangleBorder(
@@ -1180,7 +1197,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                 ),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF0B91AD),
+                backgroundColor: panelAccent(context),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(7),
                 ),
@@ -1366,7 +1383,9 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
               setState(() {});
               Navigator.pop(ctx);
             },
-            style: FilledButton.styleFrom(backgroundColor: teal),
+            style: FilledButton.styleFrom(
+              backgroundColor: panelAccent(context),
+            ),
             child: const Text('Save changes'),
           ),
         ],

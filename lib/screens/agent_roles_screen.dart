@@ -174,7 +174,7 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
                   ),
                   const SizedBox(height: 4),
                   DropdownButtonFormField<String>(
-                    value: role,
+                    initialValue: role,
                     decoration: _input('Role'),
                     items: const [
                       DropdownMenuItem(value: 'Agent', child: Text('Agent')),
@@ -233,7 +233,9 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      style: FilledButton.styleFrom(backgroundColor: teal),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: panelAccent(context),
+                      ),
                       onPressed: () {
                         setState(() {
                           _users[index]['first'] = first.text;
@@ -356,7 +358,9 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: teal),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: panelAccent(context),
+                    ),
                     onPressed: () {
                       if (password.text.isNotEmpty &&
                           password.text == confirm.text) {
@@ -410,7 +414,7 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
         ],
       ),
     );
-    if (confirmed == true && mounted)
+    if (confirmed == true && mounted) {
       setState(() {
         if (block) {
           user['active'] = !(user['active'] as bool);
@@ -418,6 +422,7 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
           _users.removeAt(index);
         }
       });
+    }
   }
 
   @override
@@ -509,7 +514,7 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
                               icon: const Icon(Icons.add, size: 15),
                               label: const Text('Add user'),
                               style: FilledButton.styleFrom(
-                                backgroundColor: teal,
+                                backgroundColor: panelAccent(context),
                                 foregroundColor: Colors.white,
                               ),
                             ),
@@ -527,7 +532,7 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
                                 child: Column(
                                   children: [
                                     Container(
-                                      color: const Color(0xFF0B91AD),
+                                      color: panelAccent(context),
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 12,
                                         horizontal: 14,

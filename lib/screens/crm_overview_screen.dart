@@ -5,7 +5,7 @@ class CRMOverviewScreen extends StatelessWidget {
 
   static const Color _ink = Color(0xFF17243B);
   static const Color _muted = Color(0xFF667892);
-  static const Color _teal = Color(0xFF0B91AD);
+  Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
   static const Color _canvas = Color(0xFFF4F6FB);
 
@@ -56,7 +56,7 @@ class CRMOverviewScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: _ink,
@@ -73,10 +73,7 @@ class CRMOverviewScreen extends StatelessWidget {
         if (action != null)
           TextButton(
             onPressed: onAction,
-            child: Text(
-              action,
-              style: const TextStyle(color: _teal, fontSize: 11),
-            ),
+            child: Text(action, style: TextStyle(color: _teal, fontSize: 11)),
           ),
       ],
     );
@@ -114,7 +111,7 @@ class CRMOverviewScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           color: _ink,
@@ -126,7 +123,7 @@ class CRMOverviewScreen extends StatelessWidget {
                         onTap: onTap,
                         child: Text(
                           link,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             color: _teal,
                             fontWeight: FontWeight.w600,
@@ -188,7 +185,7 @@ class CRMOverviewScreen extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: color.withOpacity(.11),
+              color: color.withValues(alpha: .11),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(icon, color: color, size: 19),
@@ -526,7 +523,9 @@ class CRMOverviewScreen extends StatelessWidget {
                       SizedBox(
                         height: 175,
                         child: CustomPaint(
-                          painter: _CRMOverviewChartPainter(),
+                          painter: _CRMOverviewChartPainter(
+                            accent: panelAccent(context),
+                          ),
                           child: const SizedBox.expand(),
                         ),
                       ),
@@ -547,7 +546,7 @@ class CRMOverviewScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       ...[
-                        ('New', 0, Color(0xFF0B91AD)),
+                        ('New', 0, panelAccent(context)),
                         ('Contacted', 0, Color(0xFF655CFF)),
                         ('Interested', 0, Color(0xFFFF9900)),
                         ('Qualified', 0, Color(0xFF9747FF)),
@@ -640,8 +639,11 @@ class CRMOverviewScreen extends StatelessWidget {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
-                            child: const Text(
+                            onPressed: () => showApiPendingMessage(
+                              context,
+                              'connecting more channels',
+                            ),
+                            child: Text(
                               '♧ Connect more',
                               style: TextStyle(fontSize: 10, color: _teal),
                             ),
@@ -649,7 +651,7 @@ class CRMOverviewScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      const Row(
+                      Row(
                         children: [
                           Expanded(
                             child: Text(
@@ -674,7 +676,7 @@ class CRMOverviewScreen extends StatelessWidget {
                         ],
                       ),
                       const Divider(height: 20),
-                      const Row(
+                      Row(
                         children: [
                           Expanded(
                             child: Text(
@@ -707,7 +709,7 @@ class CRMOverviewScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
                           Expanded(
                             child: Text(

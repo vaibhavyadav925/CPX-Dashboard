@@ -193,7 +193,9 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: _tab == i ? teal : Colors.transparent,
+                    color: _tab == i
+                        ? panelAccent(context)
+                        : Colors.transparent,
                     width: 2,
                   ),
                 ),
@@ -202,7 +204,9 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
                 labels[i],
                 style: TextStyle(
                   fontSize: 12,
-                  color: _tab == i ? teal : const Color(0xFF526078),
+                  color: _tab == i
+                      ? panelAccent(context)
+                      : const Color(0xFF526078),
                   fontWeight: _tab == i ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -271,7 +275,7 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
                 ? 3
                 : 2;
             final w = (box.maxWidth - (cols - 1) * 14) / cols;
-            const items = [
+            final items = [
               (
                 'Initiated',
                 '3,13,467',
@@ -282,7 +286,7 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
                 'Total Sent',
                 '1,61,137',
                 Icons.account_balance_wallet_outlined,
-                teal,
+                panelAccent(context),
               ),
               (
                 'Delivered',
@@ -290,7 +294,12 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
                 Icons.check_circle_outline,
                 Color(0xFF16A878),
               ),
-              ('Read', '34,545', Icons.visibility_outlined, teal),
+              (
+                'Read',
+                '34,545',
+                Icons.visibility_outlined,
+                panelAccent(context),
+              ),
               ('Failed', '1,52,330', Icons.highlight_off, Color(0xFFEF4444)),
             ];
             return Wrap(
@@ -319,7 +328,7 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
               headingRowHeight: 42,
               dataRowMinHeight: 64,
               dataRowMaxHeight: 68,
-              headingRowColor: WidgetStateProperty.all(const Color(0xFF0B91AD)),
+              headingRowColor: WidgetStateProperty.all(panelAccent(context)),
               headingTextStyle: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -428,7 +437,7 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
                         DataCell(
                           Text(
                             c['delivered']!,
-                            style: const TextStyle(color: Color(0xFF0B91AD)),
+                            style: TextStyle(color: panelAccent(context)),
                           ),
                         ),
                         DataCell(
@@ -548,7 +557,7 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
   }) => FilledButton(
     onPressed: onPressed ?? () => setState(() {}),
     style: FilledButton.styleFrom(
-      backgroundColor: teal,
+      backgroundColor: panelAccent(context),
       foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 15),

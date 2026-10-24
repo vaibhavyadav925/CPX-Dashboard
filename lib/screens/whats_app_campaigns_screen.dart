@@ -202,7 +202,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('New campaign'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: teal,
+                      backgroundColor: panelAccent(context),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 18,
@@ -228,7 +228,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('New campaign'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: teal,
+                      backgroundColor: panelAccent(context),
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -330,7 +330,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                       icon: const Icon(Icons.analytics_outlined, size: 16),
                       label: const Text('View combined report'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF0B91AD),
+                        backgroundColor: panelAccent(context),
                         foregroundColor: Colors.white,
                       ),
                     ),
@@ -355,7 +355,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                   dataRowMaxHeight: 82,
                   dividerThickness: .7,
                   headingRowColor: WidgetStateProperty.all(
-                    const Color(0xFF0B91AD),
+                    panelAccent(context),
                   ),
                   headingTextStyle: const TextStyle(
                     color: Colors.white,
@@ -425,25 +425,25 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                                       children: [
                                         Text(
                                           _dateParts(campaign.date)[0],
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 9,
-                                            color: Color(0xFF0B91AD),
+                                            color: panelAccent(context),
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                         Text(
                                           _dateParts(campaign.date)[1],
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 18,
-                                            color: Color(0xFF0B91AD),
+                                            color: panelAccent(context),
                                             fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                         Text(
                                           _dateParts(campaign.date)[2],
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 9,
-                                            color: Color(0xFF0B91AD),
+                                            color: panelAccent(context),
                                           ),
                                         ),
                                       ],

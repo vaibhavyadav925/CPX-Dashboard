@@ -158,7 +158,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 FilledButton(
                   onPressed: _updatePassword,
                   style: FilledButton.styleFrom(
-                    backgroundColor: teal,
+                    backgroundColor: panelAccent(context),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -214,9 +214,9 @@ class _SecurityScreenState extends State<SecurityScreen> {
                           color: const Color(0xFFE5F4F7),
                           borderRadius: BorderRadius.circular(7),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.shield_outlined,
-                          color: Color(0xFF0B91AD),
+                          color: panelAccent(context),
                           size: 17,
                         ),
                       ),
@@ -248,7 +248,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       ),
                       Switch(
                         value: twoFactorEnabled,
-                        activeColor: teal,
+                        activeThumbColor: panelAccent(context),
                         onChanged: (value) =>
                             setState(() => twoFactorEnabled = value),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

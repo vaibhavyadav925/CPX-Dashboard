@@ -20,6 +20,12 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   bool _isArrowSliding = false;
   bool _isNavigating = false;
 
+  Color get _panelAccent => panelAccent(context);
+  Color get _deepBackground => Color.lerp(_panelAccent, Colors.black, .82)!;
+  Color get _midBackground => Color.lerp(_panelAccent, Colors.black, .68)!;
+  Color get _fieldBackground => Color.lerp(_panelAccent, Colors.black, .72)!;
+  Color get _accentBorder => Color.lerp(_panelAccent, Colors.white, .24)!;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -88,11 +94,11 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF0B2140),
+        backgroundColor: _midBackground,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFF315C88)),
+          side: BorderSide(color: _accentBorder),
         ),
         title: const Text(
           'Forgot password?',
@@ -156,8 +162,8 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF03BBD9),
-              foregroundColor: Colors.white,
+              backgroundColor: _panelAccent,
+              foregroundColor: cpxBoatLogoColorForBackground(_panelAccent),
             ),
             child: const Text('Continue'),
           ),
@@ -175,26 +181,26 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFFD4E6F9), size: 20),
+      prefixIcon: Icon(icon, color: _accentBorder, size: 20),
       suffixIcon: suffix,
       filled: true,
-      fillColor: const Color(0xFF102E53),
+      fillColor: _fieldBackground,
       labelStyle: const TextStyle(color: Color(0xFFCCDDF2)),
-      floatingLabelStyle: const TextStyle(color: Color(0xFF0B91AD)),
+      floatingLabelStyle: TextStyle(color: _panelAccent),
       hintStyle: const TextStyle(color: Color(0xFFB7CBE4)),
-      prefixIconColor: const Color(0xFFD4E6F9),
+      prefixIconColor: _accentBorder,
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF315C88)),
+        borderSide: BorderSide(color: _accentBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF315C88)),
+        borderSide: BorderSide(color: _accentBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: teal, width: 1.5),
+        borderSide: BorderSide(color: _panelAccent, width: 1.5),
       ),
     );
   }
@@ -203,26 +209,25 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final wide = width >= 850;
+    final background = _deepBackground;
+    final middleBackground = _midBackground;
+    final accent = _panelAccent;
 
     // On phones, use the edge-to-edge layout from the supplied reference.
     // The desktop/tablet layout below remains unchanged.
     if (width < 600) {
       return AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Color(0xFF07152D),
+        value: SystemUiOverlayStyle(
+          statusBarColor: background,
           statusBarIconBrightness: Brightness.light,
           statusBarBrightness: Brightness.dark,
         ),
         child: Scaffold(
-          // Keep the full phone canvas on one consistent navy base so
-          // the area below the scrollable form never appears as a separate band.
-          backgroundColor: const Color(0xFF06142D),
+          backgroundColor: background,
           body: Stack(
             fit: StackFit.expand,
             children: [
-              const Positioned.fill(
-                child: ColoredBox(color: Color(0xFF06142D)),
-              ),
+              Positioned.fill(child: ColoredBox(color: background)),
               Positioned(
                 left: -210,
                 bottom: -245,
@@ -232,12 +237,12 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF047BD4).withOpacity(.32),
+                      color: accent.withValues(alpha: .32),
                       width: 2,
                     ),
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF064E9B).withOpacity(.22),
+                        middleBackground.withValues(alpha: .65),
                         Colors.transparent,
                       ],
                     ),
@@ -253,12 +258,12 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF00D6F2).withOpacity(.32),
+                      color: accent.withValues(alpha: .32),
                       width: 2,
                     ),
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF078BC0).withOpacity(.18),
+                        accent.withValues(alpha: .55),
                         Colors.transparent,
                       ],
                     ),
@@ -293,19 +298,19 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
 
     // Borderless, full-bleed premium desktop/tablet experience.
     return Scaffold(
-      backgroundColor: const Color(0xFF06162F),
+      backgroundColor: background,
       body: Stack(
         children: [
           Positioned.fill(
             child: DecoratedBox(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF07152D),
-                    Color(0xFF082750),
-                    Color(0xFF06142D),
+                    middleBackground,
+                    Color.lerp(accent, Colors.black, .55)!,
+                    background,
                   ],
                 ),
               ),
@@ -320,12 +325,12 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFF047BD4).withOpacity(.40),
+                  color: accent.withValues(alpha: .40),
                   width: 3,
                 ),
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF064E9B).withOpacity(.55),
+                    middleBackground.withValues(alpha: .8),
                     Colors.transparent,
                   ],
                 ),
@@ -341,14 +346,11 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFF00D6F2).withOpacity(.55),
+                  color: accent.withValues(alpha: .55),
                   width: 3,
                 ),
                 gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF078BC0).withOpacity(.38),
-                    Colors.transparent,
-                  ],
+                  colors: [accent.withValues(alpha: .65), Colors.transparent],
                 ),
               ),
             ),
@@ -397,11 +399,14 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     );
   }
 
-  Widget _buildBrandMark() => Image.asset(
-    'assets/logo.png',
-    width: 165,
-    height: 56,
-    fit: BoxFit.contain,
+  Widget _buildBrandMark() => ColorFiltered(
+    colorFilter: ColorFilter.matrix(cpxBoatLogoColorMatrix(_panelAccent)),
+    child: Image.asset(
+      'assets/logo.png',
+      width: 165,
+      height: 56,
+      fit: BoxFit.contain,
+    ),
   );
 
   Widget _buildMobileBrandIntro() => Column(
@@ -411,15 +416,15 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
           decoration: BoxDecoration(
-            color: const Color(0xFF0A416B).withOpacity(.55),
+            color: _panelAccent.withValues(alpha: .20),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0xFF1A79BC).withOpacity(.65)),
+            border: Border.all(color: _accentBorder.withValues(alpha: .65)),
           ),
-          child: const Text(
+          child: Text(
             'CUSTOMER COMMUNICATION PLATFORM',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF83EEFA),
+              color: _accentBorder,
               fontSize: 9,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.0,
@@ -438,10 +443,10 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           height: 1.12,
         ),
       ),
-      const Text(
+      Text(
         'Every conversation.',
         style: TextStyle(
-          color: Color(0xFF05C5EB),
+          color: _panelAccent,
           fontSize: 30,
           fontWeight: FontWeight.w900,
           letterSpacing: -.7,
@@ -467,14 +472,14 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
-            color: const Color(0xFF0A416B).withOpacity(.65),
+            color: _panelAccent.withValues(alpha: .20),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFF1A79BC).withOpacity(.6)),
+            border: Border.all(color: _accentBorder.withValues(alpha: .6)),
           ),
-          child: const Text(
+          child: Text(
             'CUSTOMER COMMUNICATION PLATFORM',
             style: TextStyle(
-              color: Color(0xFF83EEFA),
+              color: _accentBorder,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.4,
@@ -491,10 +496,10 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             letterSpacing: -1.2,
           ),
         ),
-        const Text(
+        Text(
           'Every conversation.',
           style: TextStyle(
-            color: Color(0xFF05C5EB),
+            color: _panelAccent,
             fontSize: 43,
             fontWeight: FontWeight.w900,
             letterSpacing: -1.2,
@@ -535,12 +540,15 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   Widget _buildCompactBrand() => SizedBox(
     width: double.infinity,
     child: Center(
-      child: Image.asset(
-        'assets/logo.png',
-        width: 165,
-        height: 56,
-        fit: BoxFit.contain,
-        alignment: Alignment.center,
+      child: ColorFiltered(
+        colorFilter: ColorFilter.matrix(cpxBoatLogoColorMatrix(_panelAccent)),
+        child: Image.asset(
+          'assets/logo.png',
+          width: 165,
+          height: 56,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+        ),
       ),
     ),
   );
@@ -552,10 +560,10 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.1),
+          color: Colors.white.withValues(alpha: .1),
           borderRadius: BorderRadius.circular(11),
         ),
-        child: Icon(icon, color: const Color(0xFF7DE2D8), size: 20),
+        child: Icon(icon, color: _accentBorder, size: 20),
       ),
       const SizedBox(width: 13),
       Expanded(
@@ -643,8 +651,9 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             validator: (v) {
               final email = (v ?? '').trim();
               if (email.isEmpty) return 'Enter your email address';
-              if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email))
+              if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
                 return 'Enter a valid email address';
+              }
               return null;
             },
           ),
@@ -666,7 +675,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                   _hidePassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: const Color(0xFFD4E6F9),
+                  color: _accentBorder,
                 ),
               ),
             ),
@@ -696,7 +705,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                     _hideConfirmPassword
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
-                    color: const Color(0xFFD4E6F9),
+                    color: _accentBorder,
                   ),
                 ),
               ),
@@ -713,7 +722,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                   height: 20,
                   child: Checkbox(
                     value: _rememberMe,
-                    activeColor: teal,
+                    activeColor: _panelAccent,
                     onChanged: (v) => setState(() => _rememberMe = v ?? false),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5),
@@ -744,8 +753,8 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             child: ElevatedButton(
               onPressed: _isNavigating ? null : _animateAndContinue,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF03BBD9),
-                foregroundColor: const Color.fromARGB(255, 255, 254, 254),
+                backgroundColor: _panelAccent,
+                foregroundColor: cpxBoatLogoColorForBackground(_panelAccent),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -801,7 +810,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
               onPressed: () => setState(() => _isSignup = !_isSignup),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white),
+                side: BorderSide(color: _accentBorder),
                 backgroundColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

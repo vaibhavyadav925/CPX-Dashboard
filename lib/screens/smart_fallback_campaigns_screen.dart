@@ -80,7 +80,7 @@ class _SmartFallbackCampaignsScreenState
       'date': '9/9/2026, 4:05:00 pm',
     },
   ];
-  static const _teal = Color(0xFF0B91AD);
+  Color get _teal => PanelThemeController.instance.accentColor;
   static const _navy = Color(0xFF151C30);
   static const _line = Color(0xFFD9E0ED);
   List<int> get _visible =>
@@ -142,7 +142,10 @@ class _SmartFallbackCampaignsScreenState
                         ),
                         if (!mobile)
                           FilledButton.icon(
-                            onPressed: () {},
+                            onPressed: () => showApiPendingMessage(
+                              context,
+                              'smart fallback campaign creation',
+                            ),
                             icon: const Icon(Icons.add, size: 17),
                             label: const Text('New campaign'),
                             style: FilledButton.styleFrom(
@@ -196,7 +199,7 @@ class _SmartFallbackCampaignsScreenState
                           width: 158,
                           height: 36,
                           child: DropdownButtonFormField<String>(
-                            value: _status,
+                            initialValue: _status,
                             items: const ['All statuses', 'Completed']
                                 .map(
                                   (value) => DropdownMenuItem(
@@ -251,7 +254,7 @@ class _SmartFallbackCampaignsScreenState
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.check_circle,
                                   color: _teal,
                                   size: 18,
@@ -291,7 +294,7 @@ class _SmartFallbackCampaignsScreenState
                                   label: const Text('View Analytics'),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: _teal,
-                                    side: const BorderSide(color: _teal),
+                                    side: BorderSide(color: _teal),
                                     visualDensity: VisualDensity.compact,
                                   ),
                                 ),
@@ -353,8 +356,9 @@ class _SmartFallbackCampaignsScreenState
                                                       _selected.isNotEmpty;
                                                 } else {
                                                   _selected.removeAll(_visible);
-                                                  if (_selected.isEmpty)
+                                                  if (_selected.isEmpty) {
                                                     _showReport = false;
+                                                  }
                                                 }
                                               });
                                             },
@@ -406,8 +410,9 @@ class _SmartFallbackCampaignsScreenState
                                                         _showReport = true;
                                                       } else {
                                                         _selected.remove(i);
-                                                        if (_selected.isEmpty)
+                                                        if (_selected.isEmpty) {
                                                           _showReport = false;
+                                                        }
                                                       }
                                                     });
                                                   },
@@ -437,7 +442,7 @@ class _SmartFallbackCampaignsScreenState
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
                                                                 .center,
-                                                        children: const [
+                                                        children: [
                                                           Text(
                                                             'SEP',
                                                             style: TextStyle(
@@ -484,24 +489,22 @@ class _SmartFallbackCampaignsScreenState
                                                             overflow:
                                                                 TextOverflow
                                                                     .ellipsis,
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                ),
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
                                                           ),
                                                           Text(
                                                             c['time']
                                                                 .toString(),
-                                                            style:
-                                                                const TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Color(
-                                                                    0xFF718096,
-                                                                  ),
-                                                                ),
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              color: Color(
+                                                                0xFF718096,
+                                                              ),
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
@@ -566,7 +569,7 @@ class _SmartFallbackCampaignsScreenState
                                                   children: [
                                                     Text(
                                                       '${c['count']} Contacts',
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         fontSize: 11,
                                                       ),
                                                     ),
@@ -623,7 +626,7 @@ class _SmartFallbackCampaignsScreenState
                                                     ),
                                                     child: Text(
                                                       c['amount'].toString(),
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         color: _teal,
                                                         fontSize: 10,
                                                         fontWeight:
@@ -669,7 +672,11 @@ class _SmartFallbackCampaignsScreenState
                                                 width: 110,
                                                 child: Center(
                                                   child: IconButton(
-                                                    onPressed: () {},
+                                                    onPressed: () =>
+                                                        showApiPendingMessage(
+                                                          context,
+                                                          'campaign download',
+                                                        ),
                                                     icon: const Icon(
                                                       Icons.download_outlined,
                                                       size: 17,
@@ -852,7 +859,7 @@ class _SmartFallbackCampaignsScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Text('All', style: TextStyle(color: _teal, fontSize: 12)),
@@ -929,7 +936,10 @@ class _SmartFallbackCampaignsScreenState
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {},
+                        onPressed: () => showApiPendingMessage(
+                          context,
+                          'campaign report download',
+                        ),
                         child: const Text(
                           'Download Report',
                           style: TextStyle(fontSize: 11),
@@ -939,7 +949,10 @@ class _SmartFallbackCampaignsScreenState
                     const SizedBox(width: 8),
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {},
+                        onPressed: () => showApiPendingMessage(
+                          context,
+                          'campaign statistics download',
+                        ),
                         child: const Text(
                           'Download Stats',
                           style: TextStyle(fontSize: 11),

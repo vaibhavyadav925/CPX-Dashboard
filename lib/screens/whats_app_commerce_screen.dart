@@ -53,7 +53,10 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                     color: const Color(0xFFE0F3F7),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.shopping_bag_outlined, color: teal),
+                  child: Icon(
+                    Icons.shopping_bag_outlined,
+                    color: panelAccent(context),
+                  ),
                 ),
                 const SizedBox(width: 14),
                 const Expanded(
@@ -99,7 +102,9 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: active ? teal : Colors.transparent,
+                            color: active
+                                ? panelAccent(context)
+                                : Colors.transparent,
                             width: 2,
                           ),
                         ),
@@ -108,7 +113,9 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                         labels[index],
                         style: TextStyle(
                           fontSize: 13,
-                          color: active ? teal : const Color(0xFF526078),
+                          color: active
+                              ? panelAccent(context)
+                              : const Color(0xFF526078),
                           fontWeight: active
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -147,7 +154,10 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                   color: const Color(0xFFE5F5F8),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: const Icon(Icons.menu_book_outlined, color: teal),
+                child: Icon(
+                  Icons.menu_book_outlined,
+                  color: panelAccent(context),
+                ),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -244,7 +254,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
               color: const Color(0xFFE5F5F8),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: teal, size: 19),
+            child: Icon(icon, color: panelAccent(context), size: 19),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -289,7 +299,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                               ? const Color(0xFF07945B)
                               : badge.startsWith('This')
                               ? muted
-                              : teal,
+                              : panelAccent(context),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -326,7 +336,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                 Icons.shopping_cart_outlined,
                 'TOTAL ORDERS',
                 '0',
-                teal,
+                panelAccent(context),
               ),
               _statCard(
                 Icons.check_circle_outline,
@@ -429,7 +439,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                                 border: Border(
                                   bottom: BorderSide(
                                     color: _orderFilter == f
-                                        ? teal
+                                        ? panelAccent(context)
                                         : Colors.transparent,
                                     width: 2,
                                   ),
@@ -440,7 +450,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: _orderFilter == f
-                                      ? teal
+                                      ? panelAccent(context)
                                       : const Color(0xFF526078),
                                 ),
                               ),
@@ -508,7 +518,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
                     headingRowColor: WidgetStateProperty.all(
-                      const Color(0xFF0B91AD),
+                      panelAccent(context),
                     ),
                     headingTextStyle: const TextStyle(
                       color: Colors.white,
@@ -652,7 +662,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
             icon: const Icon(Icons.add, size: 18),
             label: Text('Create $noun'),
             style: FilledButton.styleFrom(
-              backgroundColor: teal,
+              backgroundColor: panelAccent(context),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
@@ -688,7 +698,7 @@ class _WhatsAppCommerceScreenState extends State<WhatsAppCommerceScreen> {
                                 isBatch
                                     ? Icons.hub_outlined
                                     : Icons.sell_outlined,
-                                color: teal,
+                                color: panelAccent(context),
                               ),
                             ),
                             const SizedBox(width: 12),

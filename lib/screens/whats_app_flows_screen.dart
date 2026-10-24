@@ -24,9 +24,9 @@ class WhatsAppFlowsScreen extends StatelessWidget {
                     color: const Color(0xFFE0F2F6),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.account_tree_outlined,
-                    color: teal,
+                    color: panelAccent(context),
                     size: 22,
                   ),
                 ),

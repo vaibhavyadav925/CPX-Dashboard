@@ -7,11 +7,16 @@ class SMSDashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final compact = width < 900;
-    const metrics = <(String, String, IconData, Color)>[
-      ('Wallet balance', '₹2.648', Icons.account_balance_wallet_outlined, teal),
+    final metrics = <(String, String, IconData, Color)>[
+      (
+        'Wallet balance',
+        '₹2.648',
+        Icons.account_balance_wallet_outlined,
+        panelAccent(context),
+      ),
       ('DLT Templates', '1', Icons.description_outlined, Color(0xFF20A36A)),
       ('Total campaigns', '2', Icons.send_outlined, Color(0xFFFF9800)),
-      ('Scheduled', '0', Icons.access_time_rounded, teal),
+      ('Scheduled', '0', Icons.access_time_rounded, panelAccent(context)),
     ];
     return Scaffold(
       drawer: const DashboardDrawer(
@@ -146,9 +151,12 @@ class SMSDashboardScreen extends StatelessWidget {
                                       const WhatsAppCampaignsScreen(),
                                 ),
                               ),
-                          child: const Text(
+                          child: Text(
                             'View all  ›',
-                            style: TextStyle(color: teal, fontSize: 12),
+                            style: TextStyle(
+                              color: panelAccent(context),
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -157,7 +165,9 @@ class SMSDashboardScreen extends StatelessWidget {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: DataTable(
-                      headingRowColor: WidgetStateProperty.all(teal),
+                      headingRowColor: WidgetStateProperty.all(
+                        panelAccent(context),
+                      ),
                       headingTextStyle: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,

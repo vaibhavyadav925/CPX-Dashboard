@@ -124,7 +124,10 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(9),
-                          borderSide: const BorderSide(color: teal, width: 1.5),
+                          borderSide: BorderSide(
+                            color: panelAccent(context),
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       onChanged: (_) {
@@ -181,7 +184,7 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                                 ),
                               ),
                             ),
-                            const Icon(
+                            Icon(
                               Icons.calendar_month_outlined,
                               size: 16,
                               color: Color(0xFF202A3C),
@@ -234,7 +237,7 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                           Navigator.pop(dialogContext);
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: teal,
+                          backgroundColor: panelAccent(context),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(9),
@@ -408,21 +411,21 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                       color: Color(0xFFCBE9F2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.auto_awesome,
                       size: 18,
-                      color: Color(0xFF0B91AD),
+                      color: panelAccent(context),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Occasion-based campaigns get noticeably better results',
                           style: TextStyle(
-                            color: Color(0xFF0B91AD),
+                            color: panelAccent(context),
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
@@ -479,7 +482,7 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                                     children: [
                                       Text(
                                         occasion.name,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           color: Color(0xFF17233C),
                                           fontWeight: FontWeight.w600,
@@ -521,7 +524,7 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                               icon: const Icon(Icons.send_rounded, size: 15),
                               label: const Text('Start Campaign'),
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF0B91AD),
+                                backgroundColor: panelAccent(context),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 15,
@@ -586,7 +589,7 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
                                 icon: const Icon(Icons.send_rounded, size: 15),
                                 label: const Text('Start Campaign'),
                                 style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0B91AD),
+                                  backgroundColor: panelAccent(context),
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 13,
@@ -663,7 +666,7 @@ class _WhatsAppOccasionsScreenState extends State<WhatsAppOccasionsScreen> {
         ? const Color(0xFFF59E0B)
         : shopping
         ? const Color(0xFFB96800)
-        : const Color(0xFF0B91AD);
+        : panelAccent(context);
     final background = verify
         ? const Color(0xFFFFF3E4)
         : shopping

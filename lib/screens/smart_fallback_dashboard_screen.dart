@@ -48,7 +48,7 @@ class SmartFallbackDashboardScreen extends StatelessWidget {
                     'Total campaigns',
                     '47',
                     Icons.device_hub_outlined,
-                    const Color(0xFF0B91AD),
+                    panelAccent(context),
                     const Color(0xFFE6F5F8),
                   ),
                   (
@@ -177,12 +177,13 @@ class SmartFallbackDashboardScreen extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
-                          child: const Text(
+                          onPressed: () =>
+                              showApiPendingMessage(context, 'campaign list'),
+                          child: Text(
                             'View all  ›',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF0B91AD),
+                              color: panelAccent(context),
                             ),
                           ),
                         ),
@@ -191,7 +192,7 @@ class SmartFallbackDashboardScreen extends StatelessWidget {
                   ),
                   Container(
                     height: 36,
-                    color: const Color(0xFF0B91AD),
+                    color: panelAccent(context),
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: const Row(
                       children: [
@@ -345,7 +346,7 @@ class SmartFallbackDashboardScreen extends StatelessWidget {
                     _FallbackPerformanceLine(
                       'Total messages',
                       '0',
-                      const Color(0xFF17233C),
+                      Color(0xFF17233C),
                     ),
                     SizedBox(height: 13),
                     _FallbackPerformanceLine(

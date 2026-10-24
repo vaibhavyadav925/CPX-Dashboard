@@ -405,7 +405,7 @@ class _RCSChatbotScreenState extends State<RCSChatbotScreen> {
                                 _editingIndex == null ? 'Save' : 'Update',
                               ),
                               style: FilledButton.styleFrom(
-                                backgroundColor: teal,
+                                backgroundColor: panelAccent(context),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 18,
@@ -425,9 +425,13 @@ class _RCSChatbotScreenState extends State<RCSChatbotScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.chat_outlined, color: teal, size: 17),
+                          Icon(
+                            Icons.chat_outlined,
+                            color: panelAccent(context),
+                            size: 17,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Saved replies',
@@ -462,7 +466,7 @@ class _RCSChatbotScreenState extends State<RCSChatbotScreen> {
                                   padding: const EdgeInsets.only(top: 3),
                                   child: Text(
                                     '${index + 1}.',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       color: muted,
                                     ),
@@ -484,9 +488,9 @@ class _RCSChatbotScreenState extends State<RCSChatbotScreen> {
                                       ),
                                       child: Text(
                                         reply.keyword,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 10,
-                                          color: Color(0xFF0B91AD),
+                                          color: panelAccent(context),
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),

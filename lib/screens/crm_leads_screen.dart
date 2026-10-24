@@ -10,7 +10,7 @@ class CRMLeadsScreen extends StatefulWidget {
 class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
   static const Color _ink = Color(0xFF17243B);
   static const Color _muted = Color(0xFF667892);
-  static const Color _teal = Color(0xFF0B91AD);
+  Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
   static const Color _canvas = Color(0xFFF4F6FB);
 
@@ -130,7 +130,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
         const SizedBox(height: 3),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w800,
             color: _ink,
@@ -151,7 +151,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
   ) => SizedBox(
     height: 38,
     child: DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       iconSize: 18,
       style: const TextStyle(fontSize: 11, color: _ink),
@@ -213,8 +213,8 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0B91AD), Color(0xFF7859E8)],
+                      gradient: LinearGradient(
+                        colors: [panelAccent(context), Color(0xFF7859E8)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -247,7 +247,8 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                   ),
                   if (!compact) ...[
                     OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () =>
+                          showApiPendingMessage(context, 'lead export'),
                       icon: const Icon(Icons.download_outlined, size: 15),
                       label: const Text(
                         'Export',
@@ -263,7 +264,8 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () =>
+                          showApiPendingMessage(context, 'lead CSV import'),
                       icon: const Icon(Icons.upload_file_outlined, size: 15),
                       label: const Text(
                         'Import CSV',
@@ -302,12 +304,14 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                   runSpacing: 8,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () =>
+                          showApiPendingMessage(context, 'lead export'),
                       icon: const Icon(Icons.download_outlined, size: 15),
                       label: const Text('Export'),
                     ),
                     OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () =>
+                          showApiPendingMessage(context, 'lead CSV import'),
                       icon: const Icon(Icons.upload_file_outlined, size: 15),
                       label: const Text('Import CSV'),
                     ),
@@ -335,11 +339,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                       active: true,
                       note: '+0 in 24 h',
                     ),
-                    _stat(
-                      'New',
-                      '${counts['New']}',
-                      dot: const Color(0xFF0B91AD),
-                    ),
+                    _stat('New', '${counts['New']}', dot: panelAccent(context)),
                     _stat(
                       'Contacted',
                       '${counts['Contacted']}',
@@ -568,7 +568,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                                       ? const Color(0xFF00A879)
                                       : status == 'Lost'
                                       ? const Color(0xFFFF285D)
-                                      : const Color(0xFF0B91AD);
+                                      : panelAccent(context);
                                   return Column(
                                     children: [
                                       Container(
@@ -583,10 +583,11 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                                               child: Checkbox(
                                                 value: _selected.contains(i),
                                                 onChanged: (v) => setState(() {
-                                                  if (v == true)
+                                                  if (v == true) {
                                                     _selected.add(i);
-                                                  else
+                                                  } else {
                                                     _selected.remove(i);
+                                                  }
                                                 }),
                                                 activeColor: _teal,
                                               ),
@@ -611,7 +612,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                                                       (lead['name'] ?? '?')
                                                           .substring(0, 1)
                                                           .toUpperCase(),
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         color: _teal,
                                                         fontSize: 11,
                                                         fontWeight:
@@ -674,7 +675,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                                                 alignment: Alignment.centerLeft,
                                                 child: _pill(
                                                   status,
-                                                  statusColor.withOpacity(.12),
+                                                  statusColor.withValues(alpha: .12),
                                                   statusColor,
                                                   dot: true,
                                                 ),
@@ -930,18 +931,19 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
           ),
           FilledButton(
             onPressed: () {
-              if (name.text.trim().isNotEmpty)
+              if (name.text.trim().isNotEmpty) {
                 Navigator.pop(context, {
                   'name': name.text.trim(),
                   'phone': phone.text.trim(),
                 });
+              }
             },
             child: const Text('Add lead'),
           ),
         ],
       ),
     );
-    if (result != null && mounted)
+    if (result != null && mounted) {
       setState(
         () => _leads.add({
           ...result,
@@ -952,5 +954,6 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
           'activity': 'Just now',
         }),
       );
+    }
   }
 }

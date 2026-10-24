@@ -8,22 +8,22 @@ class RCSDashboardScreen extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
     final wide = width >= 1050;
     final medium = width >= 650;
-    const metrics = <(String, String, String, IconData, Color)>[
+    final metrics = <(String, String, String, IconData, Color)>[
       (
         'Wallet balance',
         '₹6.28',
         'Expires 21/8/2026',
         Icons.account_balance_wallet_outlined,
-        teal,
+        panelAccent(context),
       ),
       (
         'Delivery rate',
         '55%',
         '45,050 of 81,542 sent messages delivered',
         Icons.trending_up_rounded,
-        Color(0xFF0B91AD),
+        panelAccent(context),
       ),
-      ('Total campaigns', '124', '', Icons.send_outlined, Color(0xFF0B91AD)),
+      ('Total campaigns', '124', '', Icons.send_outlined, panelAccent(context)),
       (
         'Approved templates',
         '12',

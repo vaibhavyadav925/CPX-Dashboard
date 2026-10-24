@@ -119,7 +119,7 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Create template'),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF0B91AD),
+                backgroundColor: panelAccent(context),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -158,7 +158,7 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
                               onPressed: () => setState(() => _category = item),
                               style: TextButton.styleFrom(
                                 backgroundColor: active
-                                    ? teal
+                                    ? panelAccent(context)
                                     : Colors.transparent,
                                 foregroundColor: active
                                     ? Colors.white
@@ -265,7 +265,7 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
               dataRowMinHeight: 64,
               dataRowMaxHeight: 64,
               dividerThickness: .7,
-              headingRowColor: WidgetStateProperty.all(const Color(0xFF0B91AD)),
+              headingRowColor: WidgetStateProperty.all(panelAccent(context)),
               headingTextStyle: const TextStyle(
                 color: Colors.white,
                 fontSize: 12,
@@ -605,9 +605,9 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
                   color: const Color(0xFFE6F5F8),
                   borderRadius: BorderRadius.circular(9),
                 ),
-                child: const Text(
+                child: Text(
                   'We recommend keeping your message within 550 characters and using up to 10 emojis to align with Meta’s latest approval guidelines.',
-                  style: TextStyle(color: Color(0xFF0B91AD), fontSize: 12),
+                  style: TextStyle(color: panelAccent(context), fontSize: 12),
                 ),
               ),
               const SizedBox(height: 12),
@@ -689,7 +689,7 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
             FilledButton(
               onPressed: _submitTemplate,
               style: FilledButton.styleFrom(
-                backgroundColor: teal,
+                backgroundColor: panelAccent(context),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,

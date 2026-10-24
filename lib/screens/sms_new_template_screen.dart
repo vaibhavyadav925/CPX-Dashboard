@@ -15,7 +15,7 @@ class _SMSNewTemplateScreenState extends State<SMSNewTemplateScreen> {
   final _sender = TextEditingController();
   final _content = TextEditingController();
   String _routeType = 'Transactional';
-  String _senderId = 'Select sender ID';
+  final String _senderId = 'Select sender ID';
   String _category = 'Service Implicit';
 
   @override
@@ -43,7 +43,7 @@ class _SMSNewTemplateScreenState extends State<SMSNewTemplateScreen> {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(7),
-      borderSide: const BorderSide(color: Color(0xFF0B91AD), width: 1.3),
+      borderSide: BorderSide(color: panelAccent(context), width: 1.3),
     ),
   );
 
@@ -71,7 +71,7 @@ class _SMSNewTemplateScreenState extends State<SMSNewTemplateScreen> {
   ) => _field(
     label,
     DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       isExpanded: true,
       style: const TextStyle(fontSize: 12, color: Color(0xFF334155)),
       decoration: _fieldDecoration(''),
@@ -475,7 +475,7 @@ class _SMSNewTemplateScreenState extends State<SMSNewTemplateScreen> {
               FilledButton(
                 onPressed: _save,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF0B91AD),
+                  backgroundColor: panelAccent(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,

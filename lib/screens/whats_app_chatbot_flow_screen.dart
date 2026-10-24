@@ -9,7 +9,7 @@ class WhatsAppChatbotFlowScreen extends StatefulWidget {
 }
 
 class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
-  static const Color _teal = Color(0xFF0B91AD);
+  Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _navy = Color(0xFF17243B);
   static const Color _muted = Color(0xFF64748B);
   static const Color _line = Color(0xFFDCE3EE);
@@ -24,7 +24,7 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
   bool _showKey = false;
   bool _infoExpanded = true;
   bool _replyAny = false;
-  String _botType = 'Flow chatbot';
+  final String _botType = 'Flow chatbot';
   final List<Map<String, dynamic>> _bots = [
     {'name': 'ydcxvd csc', 'keyword': 'Sms', 'nodes': 1, 'active': true},
     {'name': 'hi', 'keyword': 'Hi  •  Start Now', 'nodes': 10, 'active': true},
@@ -54,7 +54,7 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: _teal),
+      borderSide: BorderSide(color: _teal),
     ),
   );
 
@@ -252,7 +252,10 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () {},
+                        onPressed: () => showApiPendingMessage(
+                          context,
+                          'the external AI provider console',
+                        ),
                         icon: const Icon(Icons.open_in_new, size: 13),
                         label: const Text('Open Anthropic console'),
                       ),
@@ -331,7 +334,7 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.key_outlined,
                             color: Colors.orange,
                             size: 16,
@@ -476,7 +479,7 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFF1FAFC) : Colors.white,
           border: Border.all(
-            color: selected ? const Color(0xFF0B91AD) : _line,
+            color: selected ? panelAccent(context) : _line,
             width: selected ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(9),
@@ -650,11 +653,7 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
                       padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.auto_awesome,
-                            color: _teal,
-                            size: 17,
-                          ),
+                          Icon(Icons.auto_awesome, color: _teal, size: 17),
                           const SizedBox(width: 8),
                           const Expanded(
                             child: Column(
@@ -956,10 +955,6 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
                                                   ),
                                                 ),
                                               ),
-                                      child: const Icon(
-                                        Icons.download_outlined,
-                                        size: 14,
-                                      ),
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: _navy,
                                         side: const BorderSide(color: _line),
@@ -967,6 +962,10 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
                                           horizontal: 10,
                                           vertical: 9,
                                         ),
+                                      ),
+                                      child: Icon(
+                                        Icons.download_outlined,
+                                        size: 14,
                                       ),
                                     ),
                                     const SizedBox(width: 20),

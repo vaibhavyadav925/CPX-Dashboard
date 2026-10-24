@@ -112,7 +112,7 @@ class _RCSNewTemplateScreenState extends State<RCSNewTemplateScreen> {
                 onPressed: () => setState(() => _type = type),
                 style: FilledButton.styleFrom(
                   backgroundColor: _type == type
-                      ? const Color(0xFF0B91AD)
+                      ? panelAccent(context)
                       : Colors.white,
                   foregroundColor: _type == type ? Colors.white : muted,
                   elevation: 0,
@@ -774,7 +774,7 @@ class _RCSNewTemplateScreenState extends State<RCSNewTemplateScreen> {
                 );
               },
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF0B91AD),
+                backgroundColor: panelAccent(context),
                 foregroundColor: Colors.white,
               ),
               child: const Text('Submit template'),

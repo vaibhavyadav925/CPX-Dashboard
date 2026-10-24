@@ -285,7 +285,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                 ),
                 Text(
                   '${c.total}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.w800,
                     color: navy,
@@ -409,7 +409,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
               child: Column(
                 children: [
                   Container(
-                    color: const Color(0xFF0B91AD),
+                    color: panelAccent(context),
                     padding: const EdgeInsets.fromLTRB(20, 16, 12, 18),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,7 +442,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                         ),
                         Text(
                           c.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
                           ),
@@ -512,12 +512,12 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                             color: const Color(0xFFE6F5F8),
                             borderRadius: BorderRadius.circular(9),
                           ),
-                          child: const Row(
+                          child: Row(
                             children: [
                               Icon(
                                 Icons.info_outline,
                                 size: 15,
-                                color: Color(0xFF0B91AD),
+                                color: panelAccent(context),
                               ),
                               SizedBox(width: 7),
                               Expanded(
@@ -561,7 +561,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                     Expanded(
                                       child: Text(
                                         item.$1,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -767,8 +767,8 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                       icon: const Icon(Icons.add, size: 17),
                       label: const Text('New template'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: teal,
-                        side: const BorderSide(color: teal),
+                        foregroundColor: panelAccent(context),
+                        side: BorderSide(color: panelAccent(context)),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 15,
@@ -788,7 +788,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                       icon: const Icon(Icons.add, size: 17),
                       label: const Text('New campaign'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: teal,
+                        backgroundColor: panelAccent(context),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -899,7 +899,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                   child: Column(
                     children: [
                       Container(
-                        color: const Color(0xFF0B91AD),
+                        color: panelAccent(context),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 13,
@@ -1030,7 +1030,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                     width: 30,
                                     child: Checkbox(
                                       value: checked,
-                                      activeColor: const Color(0xFF0B91AD),
+                                      activeColor: panelAccent(context),
                                       onChanged: (v) => setState(() {
                                         if (v == true) {
                                           _selected.add(realIndex);
@@ -1061,25 +1061,25 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                                 c.date.split('/')[0] == '10'
                                                     ? 'OCT'
                                                     : c.date.split('/')[0],
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 9,
-                                                  color: teal,
+                                                  color: panelAccent(context),
                                                   fontWeight: FontWeight.w700,
                                                 ),
                                               ),
                                               Text(
                                                 c.date.split('/')[1],
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 14,
-                                                  color: teal,
+                                                  color: panelAccent(context),
                                                   fontWeight: FontWeight.w800,
                                                 ),
                                               ),
                                               Text(
                                                 c.date.split('/')[2],
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 9,
-                                                  color: teal,
+                                                  color: panelAccent(context),
                                                 ),
                                               ),
                                             ],
@@ -1094,9 +1094,9 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                               Text(
                                                 c.name,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Color(0xFF0B91AD),
+                                                  color: panelAccent(context),
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
@@ -1192,9 +1192,9 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                           ),
                                           child: Text(
                                             c.amount,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 10,
-                                              color: teal,
+                                              color: panelAccent(context),
                                             ),
                                           ),
                                         ),
@@ -1259,7 +1259,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                         icon: const Icon(Icons.analytics_outlined, size: 16),
                         label: const Text('View combined report'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: teal,
+                          backgroundColor: panelAccent(context),
                           foregroundColor: Colors.white,
                         ),
                       ),

@@ -10,7 +10,7 @@ class CRMAutomationsScreen extends StatefulWidget {
 class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
   static const Color _ink = Color(0xFF17243B);
   static const Color _muted = Color(0xFF667892);
-  static const Color _teal = Color(0xFF0B91AD);
+  Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
   static const Color _canvas = Color(0xFFF4F6FB);
 
@@ -189,10 +189,7 @@ class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: _teal,
-                              width: 1.4,
-                            ),
+                            borderSide: BorderSide(color: _teal, width: 1.4),
                           ),
                         ),
                       ),
@@ -332,7 +329,7 @@ class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
                     color: const Color(0xFFE4F5F8),
                     borderRadius: BorderRadius.circular(11),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.account_tree_outlined,
                     color: _teal,
                     size: 22,
@@ -438,7 +435,7 @@ class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
                                     color: const Color(0xFFE4F5F8),
                                     borderRadius: BorderRadius.circular(9),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.account_tree_outlined,
                                     size: 18,
                                     color: _teal,

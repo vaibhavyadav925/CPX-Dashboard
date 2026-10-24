@@ -85,7 +85,7 @@ class _SMSTemplatesScreenState extends State<SMSTemplatesScreen> {
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('Create template'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0B91AD),
+                    backgroundColor: panelAccent(context),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -190,7 +190,7 @@ class _SMSTemplatesScreenState extends State<SMSTemplatesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF0B91AD) : Colors.transparent,
+          color: active ? panelAccent(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(7),
         ),
         child: Text(
@@ -224,7 +224,7 @@ class _SMSTemplatesScreenState extends State<SMSTemplatesScreen> {
       child: Column(
         children: [
           Container(
-            color: const Color(0xFF0B91AD),
+            color: panelAccent(context),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: const Row(
               children: [
@@ -480,7 +480,7 @@ class _SMSTemplatesScreenState extends State<SMSTemplatesScreen> {
                     decoration: const InputDecoration(labelText: 'Sender ID'),
                   ),
                   DropdownButtonFormField<String>(
-                    value: category,
+                    initialValue: category,
                     decoration: const InputDecoration(labelText: 'Category'),
                     items: const [
                       DropdownMenuItem(

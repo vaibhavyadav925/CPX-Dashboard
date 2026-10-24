@@ -76,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _pageHeading() {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -91,7 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(Icons.circle, size: 6, color: const Color(0xFF0B91AD)),
+                  Icon(Icons.circle, size: 6, color: panelAccent(context)),
                   SizedBox(width: 5),
                   Text(
                     'This Month',
@@ -209,7 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onPressed: applyFilters,
 
                   style: FilledButton.styleFrom(
-                    backgroundColor: teal,
+                    backgroundColor: panelAccent(context),
 
                     foregroundColor: Colors.white,
 
@@ -557,7 +557,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                         size: 19,
 
-                        color: active ? teal : Colors.white70,
+                        color: active ? panelAccent(context) : Colors.white70,
                       ),
 
                       const SizedBox(height: 3),
@@ -572,7 +572,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: TextStyle(
                           fontSize: 8,
 
-                          color: active ? teal : Colors.white70,
+                          color: active ? panelAccent(context) : Colors.white70,
 
                           fontWeight: active
                               ? FontWeight.bold

@@ -10,11 +10,11 @@ class CRMLeadSourcesScreen extends StatefulWidget {
 class _CRMLeadSourcesScreenState extends State<CRMLeadSourcesScreen> {
   static const Color _ink = Color(0xFF17243B);
   static const Color _muted = Color(0xFF667892);
-  static const Color _teal = Color(0xFF0B91AD);
+  Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
   static const Color _canvas = Color(0xFFF4F6FB);
   int _tab = 0;
-  bool _confirmNewUrl = false;
+  final bool _confirmNewUrl = false;
   final _phone = TextEditingController();
   final _name = TextEditingController(text: 'Test Lead');
   String _source = 'Facebook Ads';
@@ -173,7 +173,7 @@ class _CRMLeadSourcesScreenState extends State<CRMLeadSourcesScreen> {
           ),
           child: Text(
             '$n',
-            style: const TextStyle(
+            style: TextStyle(
               color: _teal,
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -492,7 +492,7 @@ class _CRMLeadSourcesScreenState extends State<CRMLeadSourcesScreen> {
                         ),
                         const SizedBox(height: 4),
                         DropdownButtonFormField<String>(
-                          value: _source,
+                          initialValue: _source,
                           isDense: true,
                           decoration: InputDecoration(
                             filled: true,
@@ -616,8 +616,8 @@ class _CRMLeadSourcesScreenState extends State<CRMLeadSourcesScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0B91AD), Color(0xFF7859E8)],
+                      gradient: LinearGradient(
+                        colors: [panelAccent(context), Color(0xFF7859E8)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
