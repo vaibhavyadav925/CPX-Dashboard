@@ -86,22 +86,22 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
   }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: muted, size: 20),
+      prefixIcon: Icon(icon, color: const Color(0xFFD4E6F9), size: 20),
       suffixIcon: suffix,
       filled: true,
-      fillColor: const Color(0xFFF8FAFC),
-      labelStyle: const TextStyle(color: Color(0xFF172C4C)),
+      fillColor: const Color(0xFF102E53),
+      labelStyle: const TextStyle(color: Color(0xFFCCDDF2)),
       floatingLabelStyle: const TextStyle(color: Color(0xFF0B91AD)),
-      hintStyle: const TextStyle(color: Color(0xFF52627A)),
-      prefixIconColor: const Color(0xFF52627A),
+      hintStyle: const TextStyle(color: Color(0xFFB7CBE4)),
+      prefixIconColor: const Color(0xFFD4E6F9),
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: premiumBorder),
+        borderSide: const BorderSide(color: Color(0xFF315C88)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: premiumBorder),
+        borderSide: const BorderSide(color: Color(0xFF315C88)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -125,30 +125,93 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           statusBarBrightness: Brightness.dark,
         ),
         child: Scaffold(
-          backgroundColor: navy,
-          body: Column(
+          backgroundColor: const Color(0xFF06162F),
+          body: Stack(
             children: [
-              // Navy background extends behind the phone status bar.
-              Container(
-                width: double.infinity,
-                color: navy,
-                child: SafeArea(
-                  bottom: false,
-                  child: SizedBox(
-                    height: 72,
-                    child: Center(child: _buildCompactBrand()),
+              // Use the same premium navy gradient as the desktop login page.
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF07152D),
+                        Color(0xFF082750),
+                        Color(0xFF06142D),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              Expanded(
-                child: SafeArea(
-                  top: false,
-                  bottom: true,
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.zero,
-                    child: _buildFormPanel(wide: false),
+              // Subtle decorative rings, scaled and positioned for mobile.
+              Positioned(
+                left: -185,
+                bottom: -235,
+                child: Container(
+                  width: 430,
+                  height: 430,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF047BD4).withOpacity(.32),
+                      width: 2,
+                    ),
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF064E9B).withOpacity(.28),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
+              ),
+              Positioned(
+                right: -245,
+                bottom: -260,
+                child: Container(
+                  width: 470,
+                  height: 470,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00D6F2).withOpacity(.35),
+                      width: 2,
+                    ),
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF078BC0).withOpacity(.22),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Keep the form scrollable on shorter phones and when signing up.
+              Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: Colors.transparent,
+                    child: SafeArea(
+                      bottom: false,
+                      child: SizedBox(
+                        height: 72,
+                        child: Center(child: _buildCompactBrand()),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: SafeArea(
+                      top: false,
+                      bottom: true,
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.zero,
+                        child: _buildFormPanel(wide: false),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -156,59 +219,108 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
       );
     }
 
+    // Borderless, full-bleed premium desktop/tablet experience.
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0B91AD), Color(0xFF14B8A6), navy],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(wide ? 32 : 18),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1120),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: premiumBorder),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x120B1730),
-                        blurRadius: 32,
-                        offset: Offset(0, 14),
-                      ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: wide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(flex: 5, child: _buildBrandPanel()),
-                            Expanded(
-                              flex: 4,
-                              child: _buildFormPanel(wide: true),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildCompactBrand(),
-                            _buildFormPanel(wide: false),
-                          ],
-                        ),
+      backgroundColor: const Color(0xFF06162F),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF07152D),
+                    Color(0xFF082750),
+                    Color(0xFF06142D),
+                  ],
                 ),
               ),
             ),
           ),
-        ),
+          Positioned(
+            left: -240,
+            bottom: -380,
+            child: Container(
+              width: 920,
+              height: 650,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF047BD4).withOpacity(.40),
+                  width: 3,
+                ),
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF064E9B).withOpacity(.55),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: -310,
+            bottom: -440,
+            child: Container(
+              width: 850,
+              height: 800,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF00D6F2).withOpacity(.55),
+                  width: 3,
+                ),
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF078BC0).withOpacity(.38),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: wide ? 56 : 28,
+                  vertical: 36,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 72,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1180),
+                      child: wide
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(flex: 11, child: _buildBrandPanel()),
+                                const SizedBox(width: 80),
+                                Expanded(
+                                  flex: 10,
+                                  child: _buildFormPanel(wide: true),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildCompactBrand(),
+                                _buildFormPanel(wide: false),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -220,76 +332,77 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
     fit: BoxFit.contain,
   );
 
-  Widget _buildBrandPanel() => Container(
-    constraints: const BoxConstraints(minHeight: 640),
-    padding: const EdgeInsets.all(42),
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [navy, Color(0xFF172C4C), Color(0xFF0B91AD)],
-      ),
-    ),
+  Widget _buildBrandPanel() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 20),
     child: Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [_buildBrandMark()]),
-        const Spacer(),
+        _buildBrandMark(),
+        const SizedBox(height: 55),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.12),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: Colors.white.withOpacity(.18)),
+            color: const Color(0xFF0A416B).withOpacity(.65),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0xFF1A79BC).withOpacity(.6)),
           ),
           child: const Text(
             'CUSTOMER COMMUNICATION PLATFORM',
             style: TextStyle(
-              color: Color(0xFFB8F3EF),
-              fontSize: 10,
+              color: Color(0xFF83EEFA),
+              fontSize: 11,
               fontWeight: FontWeight.w800,
-              letterSpacing: 1.1,
+              letterSpacing: 1.4,
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 28),
         const Text(
-          'One workspace.\nEvery conversation.',
+          'One workspace.',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 36,
-            height: 1.15,
+            fontSize: 43,
             fontWeight: FontWeight.w900,
-            letterSpacing: -.6,
+            letterSpacing: -1.2,
           ),
         ),
-        const SizedBox(height: 18),
         const Text(
-          'Manage campaigns, messaging channels and customer engagement from your CPXBOAT dashboard.',
-          style: TextStyle(color: Color(0xFFD4DEEC), fontSize: 15, height: 1.7),
+          'Every conversation.',
+          style: TextStyle(
+            color: Color(0xFF05C5EB),
+            fontSize: 43,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -1.2,
+          ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
+        const Text(
+          'Manage campaigns, messaging channels and customer\nengagement from your CPXBOAT dashboard.',
+          style: TextStyle(color: Color(0xFFC7D9F1), fontSize: 15, height: 1.6),
+        ),
+        const SizedBox(height: 34),
         _brandFeature(
           Icons.dashboard_customize_outlined,
           'Unified dashboard',
           'Your key activity and performance in one place.',
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 19),
         _brandFeature(
           Icons.forum_outlined,
           'Multi-channel messaging',
           'Keep campaigns and channels organised.',
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 19),
         _brandFeature(
           Icons.insights_outlined,
           'Clear campaign insights',
           'Review delivery and engagement reports.',
         ),
-        const Spacer(),
+        const SizedBox(height: 48),
         const Text(
           'CPXBOAT  •  Messaging made manageable',
-          style: TextStyle(color: Color(0xFFB7C5D8), fontSize: 11),
+          style: TextStyle(color: Color(0xFFB7C5D8), fontSize: 12),
         ),
       ],
     ),
@@ -350,8 +463,8 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
 
   Widget _buildFormPanel({required bool wide}) => Padding(
     padding: EdgeInsets.symmetric(
-      horizontal: wide ? 42 : 14,
-      vertical: wide ? 42 : 28,
+      horizontal: wide ? 0 : 14,
+      vertical: wide ? 18 : 28,
     ),
     child: Form(
       key: _formKey,
@@ -363,7 +476,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             _isSignup ? 'Create your account' : 'Welcome back',
             style: const TextStyle(
               color: Color(0xFFFFFFFF),
-              fontSize: 27,
+              fontSize: 32,
               fontWeight: FontWeight.w900,
               letterSpacing: -.4,
             ),
@@ -383,7 +496,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           if (_isSignup) ...[
             TextFormField(
               controller: _nameController,
-              style: const TextStyle(color: Color(0xFF0B1730)),
+              style: const TextStyle(color: Colors.white),
               textCapitalization: TextCapitalization.words,
               decoration: _fieldDecoration(
                 'Full Name',
@@ -396,7 +509,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           ],
           TextFormField(
             controller: _emailController,
-            style: const TextStyle(color: Color(0xFF0B1730)),
+            style: const TextStyle(color: Colors.white),
             keyboardType: TextInputType.emailAddress,
             autofillHints: const [AutofillHints.email],
             decoration: _fieldDecoration(
@@ -414,7 +527,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
           const SizedBox(height: 15),
           TextFormField(
             controller: _passwordController,
-            style: const TextStyle(color: Color(0xFF0B1730)),
+            style: const TextStyle(color: Colors.white),
             obscureText: _hidePassword,
             autofillHints: _isSignup
                 ? const [AutofillHints.newPassword]
@@ -429,7 +542,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                   _hidePassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: muted,
+                  color: const Color(0xFFD4E6F9),
                 ),
               ),
             ),
@@ -443,7 +556,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             const SizedBox(height: 15),
             TextFormField(
               controller: _confirmPasswordController,
-              style: const TextStyle(color: Color(0xFF0B1730)),
+              style: const TextStyle(color: Colors.white),
               obscureText: _hideConfirmPassword,
               decoration: _fieldDecoration(
                 'Confirm password',
@@ -459,7 +572,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
                     _hideConfirmPassword
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
-                    color: muted,
+                    color: const Color(0xFFD4E6F9),
                   ),
                 ),
               ),
@@ -513,7 +626,7 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
             child: ElevatedButton(
               onPressed: _isNavigating ? null : _animateAndContinue,
               style: ElevatedButton.styleFrom(
-                backgroundColor: teal,
+                backgroundColor: const Color(0xFF03BBD9),
                 foregroundColor: const Color.fromARGB(255, 255, 254, 254),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
