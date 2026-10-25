@@ -29,6 +29,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -38,3 +39,9 @@ flutter:
   # CPXBOAT logo asset
   assets:
     - assets/logo.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/App.icon.png"
+  min_sdk_android: 21
