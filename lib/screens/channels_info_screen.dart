@@ -125,6 +125,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
               'WhatsApp',
               Icons.chat_rounded,
               const Color(0xFF18C96A),
+              isWhatsApp: true,
             ),
             _connectedCard(
               'SMS',
@@ -278,7 +279,12 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
     );
   }
 
-  Widget _connectedCard(String name, IconData icon, Color color) => InkWell(
+  Widget _connectedCard(
+    String name,
+    IconData icon,
+    Color color, {
+    bool isWhatsApp = false,
+  }) => InkWell(
     onTap: () => _openDetail(name),
     borderRadius: BorderRadius.circular(9),
     child: Container(
@@ -301,7 +307,14 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                   color: color,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(icon, size: 15, color: Colors.white),
+                child: isWhatsApp
+                    ? Image.asset(
+                        'assets/whatsapp.png',
+                        width: 19,
+                        height: 19,
+                        fit: BoxFit.contain,
+                      )
+                    : Icon(icon, size: 15, color: Colors.white),
               ),
               const Spacer(),
               const Icon(
