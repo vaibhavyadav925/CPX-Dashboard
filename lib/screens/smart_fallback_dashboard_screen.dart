@@ -20,7 +20,7 @@ class SmartFallbackDashboardScreen extends StatelessWidget {
           padding: EdgeInsets.all(padding),
           children: [
             const Text(
-              'Hi, ajay 👋',
+              'Hi, Vaibhav 👋',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,

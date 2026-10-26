@@ -39,7 +39,7 @@ flutter:
   # CPXBOAT logo asset
   assets:
     - assets/logo.png
-    - assets/Whatsapp.png
+    - assets/whatsapp.png
 
 flutter_launcher_icons:
   android: true
