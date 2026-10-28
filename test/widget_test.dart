@@ -4,6 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  test('CSV export quotes fields and protects spreadsheet formulas', () {
+    expect(
+      encodeCsv(
+        ['Name', 'Note', 'Formula'],
+        [
+          ['Ajay', 'Said "hello"\nagain', ' =1+1'],
+        ],
+      ),
+      '"Name","Note","Formula"\r\n"Ajay","Said ""hello""\nagain","\' =1+1"',
+    );
+  });
+
   test('logo color contrasts with the panel background', () {
     expect(cpxBoatLogoColorForBackground(Colors.black), Colors.white);
     expect(cpxBoatLogoColorForBackground(Colors.white), navy);
@@ -144,5 +156,23 @@ void main() {
 
     final preferences = await SharedPreferences.getInstance();
     expect(preferences.getInt('panel_accent_color'), selectedColor.toARGB32());
+  });
+
+  testWidgets('billing controls fit phone, tablet, and web widths', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    for (final width in [360.0, 800.0, 1024.0, 1440.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pumpWidget(const MaterialApp(home: ManageBillingScreen()));
+      await tester.pumpAndSettle();
+
+      final exception = tester.takeException();
+      expect(exception, isNull, reason: 'Viewport width $width');
+    }
   });
 }

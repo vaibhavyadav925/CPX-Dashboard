@@ -946,15 +946,25 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
                                       ),
                                     ),
                                     OutlinedButton(
-                                      onPressed: () =>
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'Flow export is not connected yet.',
-                                                  ),
-                                                ),
-                                              ),
+                                      onPressed: () => saveCsvFile(
+                                        context,
+                                        fileName:
+                                            'whatsapp_chatbot_${bot['name']}_flow',
+                                        headers: const [
+                                          'Name',
+                                          'Keyword',
+                                          'Nodes',
+                                          'Active',
+                                        ],
+                                        rows: [
+                                          [
+                                            bot['name'],
+                                            bot['keyword'],
+                                            bot['nodes'],
+                                            bot['active'],
+                                          ],
+                                        ],
+                                      ),
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: _navy,
                                         side: const BorderSide(color: _line),

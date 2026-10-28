@@ -440,15 +440,12 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
                                   children: [
                                     IconButton(
                                       tooltip: 'Download',
-                                      onPressed: () =>
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'Download is not connected yet.',
-                                                  ),
-                                                ),
-                                              ),
+                                      onPressed: () => saveCsvFile(
+                                        context,
+                                        fileName: 'sms_campaign_report',
+                                        headers: row.keys.toList(),
+                                        rows: [row.values.toList()],
+                                      ),
                                       icon: const Icon(
                                         Icons.download_outlined,
                                         size: 17,

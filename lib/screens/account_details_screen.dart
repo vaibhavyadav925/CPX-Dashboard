@@ -11,8 +11,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   String company = 'Webtechage-Manager';
   String firstName = '';
   String lastName = '';
-  String email = 'ajay@webtechagel.com';
-  String phone = '7337522120';
+  String email = 'Vaibhav@webtechagel.com';
+  String phone = '6392368875';
   String region = 'India (INR)';
   String country = 'India';
   String stateName = '';

@@ -166,7 +166,7 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
       ),
       SizedBox(height: 4),
       Text(
-        'Delivery performance across your RCS campaigns.',
+        'Delivery performance across your WhatsApp campaigns.',
         style: TextStyle(fontSize: 12, color: muted),
       ),
     ],
@@ -490,14 +490,12 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
                               ),
                               IconButton(
                                 tooltip: 'Download report',
-                                onPressed: () => ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Report download is a demo action.',
-                                        ),
-                                      ),
-                                    ),
+                                onPressed: () => saveCsvFile(
+                                  context,
+                                  fileName: 'whatsapp_${c['name']}_report',
+                                  headers: c.keys.toList(),
+                                  rows: [c.values.toList()],
+                                ),
                                 icon: const Icon(
                                   Icons.download_outlined,
                                   size: 17,
@@ -637,10 +635,18 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
             ),
             _getReportsButton(),
             OutlinedButton.icon(
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Select a report to download chat.'),
-                ),
+              onPressed: () => saveCsvFile(
+                context,
+                fileName: 'whatsapp_conversation_report',
+                headers: const [
+                  'Date',
+                  'Phone',
+                  'Contact',
+                  'Message',
+                  'Direction',
+                  'Status',
+                ],
+                rows: const [],
               ),
               icon: const Icon(Icons.download_outlined, size: 16),
               label: const Text('Download Chat'),
@@ -665,10 +671,17 @@ class _WhatsAppReportsScreenState extends State<WhatsAppReportsScreen> {
             _dateField('To', () => _pickDate(false)),
             _getReportsButton(),
             OutlinedButton.icon(
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Select a date range before downloading.'),
-                ),
+              onPressed: () => saveCsvFile(
+                context,
+                fileName: 'whatsapp_chatbot_report',
+                headers: const [
+                  'Date',
+                  'Chatbot',
+                  'Conversations',
+                  'Messages',
+                  'Completed',
+                ],
+                rows: const [],
               ),
               icon: const Icon(Icons.download_outlined, size: 16),
               label: const Text('Download Report'),

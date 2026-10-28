@@ -16,13 +16,13 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
     text: '5000',
   );
   final TextEditingController companyController = TextEditingController(
-    text: 'Webtechage-Manager',
+    text: 'Webtechage',
   );
   final TextEditingController phoneController = TextEditingController(
     text: '7337522120',
   );
   final TextEditingController emailController = TextEditingController(
-    text: 'ajay@webtechagel.com',
+    text: 'Vaibhav@webtechagel.com',
   );
   final TextEditingController countryController = TextEditingController(
     text: 'India',
@@ -122,6 +122,47 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
   String money(num n) => '₹${n.toStringAsFixed(2)}';
   double get walletAmount => double.tryParse(balanceController.text) ?? 0;
 
+  Future<void> _downloadLedger() {
+    final query = searchController.text.toLowerCase();
+    final filtered = transactions.where(
+      (row) =>
+          row.values.join(' ').toLowerCase().contains(query) &&
+          (transactionFilter == 'All' || row['type'] == transactionFilter),
+    );
+    const columns = [
+      'type',
+      'detail',
+      'campaign',
+      'channel',
+      'amount',
+      'date',
+      'time',
+      'debit',
+      'refund',
+      'by',
+    ];
+
+    return saveCsvFile(
+      context,
+      fileName: 'billing_ledger',
+      headers: const [
+        'Type',
+        'Detail',
+        'Campaign',
+        'Channel',
+        'Amount',
+        'Date',
+        'Time',
+        'Debit',
+        'Refund',
+        'By',
+      ],
+      rows: filtered.map(
+        (row) => columns.map((column) => row[column]).toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,7 +173,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
         top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final compact = constraints.maxWidth < 800;
+            final compact = constraints.maxWidth < 1100;
             return ListView(
               padding: EdgeInsets.fromLTRB(
                 compact ? 12 : 22,
@@ -498,9 +539,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
             Align(
               alignment: Alignment.centerLeft,
               child: OutlinedButton.icon(
-                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ledger download requested')),
-                ),
+                onPressed: _downloadLedger,
                 icon: const Icon(Icons.download_outlined, size: 16),
                 label: const Text(
                   'Download Ledger',
@@ -528,6 +567,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                   width: 160,
                   height: 38,
                   child: DropdownButtonFormField<String>(
+                    isExpanded: true,
                     initialValue: transactionFilter,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(
@@ -552,6 +592,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                                 value: e,
                                 child: Text(
                                   e,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
@@ -563,9 +604,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
                 ),
                 const Spacer(),
                 OutlinedButton.icon(
-                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Ledger download requested')),
-                  ),
+                  onPressed: _downloadLedger,
                   icon: const Icon(Icons.download_outlined, size: 16),
                   label: const Text(
                     'Download Ledger',

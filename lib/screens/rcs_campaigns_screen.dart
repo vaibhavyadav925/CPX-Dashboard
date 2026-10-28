@@ -184,54 +184,115 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
   }
 
   void _showDeliveryDialog(CampaignRecord c) {
-    // Open the same full-height Campaign Report panel used by the WhatsApp
-    // campaigns report, instead of the old circular Delivery Status dialog.
-    showGeneralDialog<void>(
+    showDialog<void>(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Close campaign report',
-      barrierColor: Colors.black45,
-      transitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (dialogContext, animation, secondaryAnimation) {
-        final screenWidth = MediaQuery.of(dialogContext).size.width;
-        return Align(
-          alignment: Alignment.centerRight,
-          child: Material(
-            color: Colors.transparent,
-            child: SizedBox(
-              width: screenWidth < 440 ? screenWidth : 414,
-              height: MediaQuery.of(dialogContext).size.height,
-              child: SafeArea(
-                child: _CampaignReportSidePanel(
-                  campaign: c,
-                  onClose: () => Navigator.of(dialogContext).pop(),
-                  onDownload: (label) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          '$label is not connected to a report service yet.',
+      builder: (dialogContext) {
+        final wide = MediaQuery.of(dialogContext).size.width >= 620;
+        return Dialog(
+          backgroundColor: Colors.white,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const CircleAvatar(
+                          backgroundColor: Color(0xFFE6F8EE),
+                          child: Icon(
+                            Icons.donut_large_rounded,
+                            color: Color(0xFF16B86A),
+                          ),
                         ),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Delivery Status',
+                                style: TextStyle(
+                                  color: Color(0xFF263244),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                'Campaign message breakdown',
+                                style: TextStyle(color: muted, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFDDE3ED)),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.cell_tower_rounded,
+                                size: 12,
+                                color: Color(0xFF16B86A),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Live',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: muted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          tooltip: 'Close',
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          icon: const Icon(Icons.close, size: 19),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    if (wide)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(child: _statusRing(c)),
+                          const SizedBox(width: 12),
+                          Expanded(flex: 2, child: _statusRows(c)),
+                        ],
+                      )
+                    else ...[
+                      _statusRing(c),
+                      const SizedBox(height: 8),
+                      _statusRows(c),
+                    ],
+                  ],
                 ),
               ),
             ),
           ),
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-        );
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1, 0),
-            end: Offset.zero,
-          ).animate(curved),
-          child: child,
         );
       },
     );
@@ -243,40 +304,16 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
       child: SizedBox(
         width: 170,
         height: 170,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFEF4444), width: 9),
-              ),
-            ),
-            Container(
-              width: 135,
-              height: 135,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE9ECF2), width: 9),
-              ),
-            ),
-            Container(
-              width: 105,
-              height: 105,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE9ECF2), width: 9),
-              ),
-            ),
-            Container(
-              width: 75,
-              height: 75,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE9ECF2), width: 9),
-              ),
-            ),
-            Column(
+        child: CustomPaint(
+          painter: _RcsStatusRingPainter(
+            total: c.total,
+            sent: c.sent,
+            delivered: c.delivered,
+            read: c.read,
+            failed: c.failed,
+          ),
+          child: Center(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
@@ -285,7 +322,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                 ),
                 Text(
                   '${c.total}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.w800,
                     color: navy,
@@ -293,7 +330,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     ),
@@ -614,30 +651,25 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                           children: [
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () => ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Download Report is not connected yet.',
-                                        ),
-                                      ),
-                                    ),
-                                child: const Text('Download Report'),
-                              ),
+                                  onPressed: () => saveCampaignCsv(
+                                    context,
+                                    'rcs',
+                                    [c],
+                                  ),
+                                  child: const Text('Download Report'),
+                                ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () => ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Download Stats is not connected yet.',
-                                        ),
-                                      ),
-                                    ),
-                                child: const Text('Download Stats'),
-                              ),
+                                  onPressed: () => saveCampaignCsv(
+                                    context,
+                                    'rcs',
+                                    [c],
+                                    statsOnly: true,
+                                  ),
+                                  child: const Text('Download Stats'),
+                                ),
                             ),
                           ],
                         ),
@@ -758,24 +790,6 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                     ),
                   ),
                   if (wide) ...[
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const RCSNewTemplateScreen(),
-                        ),
-                      ),
-                      icon: const Icon(Icons.add, size: 17),
-                      label: const Text('New template'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: panelAccent(context),
-                        side: BorderSide(color: panelAccent(context)),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 15,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     FilledButton.icon(
                       onPressed: () => ScaffoldMessenger.of(context)
                           .showSnackBar(
@@ -863,15 +877,6 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                   _dateField(_dateLabel(_fromDate), () => _pickDate(true)),
                   _dateField(_dateLabel(_toDate), () => _pickDate(false)),
                   if (!wide) ...[
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const RCSNewTemplateScreen(),
-                        ),
-                      ),
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('New template'),
-                    ),
                     FilledButton.icon(
                       onPressed: () => ScaffoldMessenger.of(context)
                           .showSnackBar(
@@ -896,374 +901,763 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      Container(
-                        color: panelAccent(context),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 13,
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              child: Checkbox(
-                                value:
-                                    rows.isNotEmpty &&
-                                    rows.every(
-                                      (c) => _selected.contains(
-                                        _campaigns.indexOf(c),
-                                      ),
-                                    ),
-                                side: const BorderSide(color: Colors.white),
-                                activeColor: navy,
-                                onChanged: (v) => setState(() {
-                                  if (v == true) {
-                                    _selected.addAll(
-                                      rows.map((c) => _campaigns.indexOf(c)),
-                                    );
-                                  } else {
-                                    _selected.removeAll(
-                                      rows.map((c) => _campaigns.indexOf(c)),
-                                    );
-                                  }
-                                }),
-                              ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      // Keep the table columns aligned on narrow phones and
+                      // allow horizontal scrolling instead of a RenderFlex overflow.
+                      // Use a deliberate minimum table width on phones. The
+                      // horizontal scroll view handles the extra width, while
+                      // every column keeps enough room for its own contents.
+                      width: wide
+                          ? MediaQuery.of(context).size.width - 44
+                          : 540,
+                      child: Column(
+                        children: [
+                          Container(
+                            color: panelAccent(context),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 13,
                             ),
-                            const Expanded(
-                              flex: 3,
-                              child: Text(
-                                'Campaign',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            if (wide)
-                              const Expanded(
-                                flex: 3,
-                                child: Text(
-                                  'Template',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 30,
+                                  child: Checkbox(
+                                    materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    value:
+                                        rows.isNotEmpty &&
+                                        rows.every(
+                                          (c) => _selected.contains(
+                                            _campaigns.indexOf(c),
+                                          ),
+                                        ),
+                                    side: const BorderSide(color: Colors.white),
+                                    activeColor: navy,
+                                    onChanged: (v) => setState(() {
+                                      if (v == true) {
+                                        _selected.addAll(
+                                          rows.map(
+                                            (c) => _campaigns.indexOf(c),
+                                          ),
+                                        );
+                                      } else {
+                                        _selected.removeAll(
+                                          rows.map(
+                                            (c) => _campaigns.indexOf(c),
+                                          ),
+                                        );
+                                      }
+                                    }),
                                   ),
                                 ),
-                              ),
-                            if (wide)
-                              const Expanded(
-                                flex: 3,
-                                child: Text(
-                                  'Bot Category',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            const Expanded(
-                              flex: 2,
-                              child: Text(
-                                'Recipients',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            if (wide)
-                              const Expanded(
-                                flex: 1,
-                                child: Text(
-                                  'Amount',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            const Expanded(
-                              flex: 1,
-                              child: Text(
-                                'Status',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 44),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: rows.length,
-                          itemBuilder: (context, index) {
-                            final c = rows[index];
-                            final realIndex = _campaigns.indexOf(c);
-                            final checked = _selected.contains(realIndex);
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 7,
-                              ),
-                              decoration: BoxDecoration(
-                                color: index.isEven
-                                    ? Colors.white
-                                    : const Color(0xFFF8F9FC),
-                                border: const Border(
-                                  bottom: BorderSide(color: Color(0xFFDCE3ED)),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 30,
-                                    child: Checkbox(
-                                      value: checked,
-                                      activeColor: panelAccent(context),
-                                      onChanged: (v) => setState(() {
-                                        if (v == true) {
-                                          _selected.add(realIndex);
-                                        } else {
-                                          _selected.remove(realIndex);
-                                        }
-                                      }),
-                                    ),
-                                  ),
-                                  Expanded(
+                                if (wide)
+                                  const Expanded(
                                     flex: 3,
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 44,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 7,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFE4F3F6),
-                                            borderRadius: BorderRadius.circular(
-                                              9,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                c.date.split('/')[0] == '10'
-                                                    ? 'OCT'
-                                                    : c.date.split('/')[0],
-                                                style: TextStyle(
-                                                  fontSize: 9,
-                                                  color: panelAccent(context),
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                              Text(
-                                                c.date.split('/')[1],
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: panelAccent(context),
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                              Text(
-                                                c.date.split('/')[2],
-                                                style: TextStyle(
-                                                  fontSize: 9,
-                                                  color: panelAccent(context),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                c.name,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: panelAccent(context),
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              Text(
-                                                c.time,
-                                                style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: muted,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      'Campaign',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(
+                                    width: 175,
+                                    child: Text(
+                                      'Campaign',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
-                                  if (wide)
-                                    Expanded(
-                                      flex: 3,
-                                      child: Text(
-                                        c.template,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: muted,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                if (wide)
+                                  const Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      'Template',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
                                       ),
-                                    ),
-                                  if (wide)
-                                    const Expanded(
-                                      flex: 3,
-                                      child: Text(
-                                        'Promotional',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: muted,
-                                        ),
-                                      ),
-                                    ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Wrap(
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      spacing: 5,
-                                      children: [
-                                        Text(
-                                          '${c.count} Contacts',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            color: navy,
-                                          ),
-                                        ),
-                                        OutlinedButton.icon(
-                                          onPressed: () =>
-                                              _showCombinedPanel([c]),
-                                          icon: const Icon(
-                                            Icons.timelapse_rounded,
-                                            size: 13,
-                                            color: Color(0xFF20B85A),
-                                          ),
-                                          label: const Text(
-                                            'View',
-                                            style: TextStyle(fontSize: 10),
-                                          ),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 7,
-                                            ),
-                                            minimumSize: const Size(0, 28),
-                                            visualDensity:
-                                                VisualDensity.compact,
-                                          ),
-                                        ),
-                                      ],
                                     ),
                                   ),
-                                  if (wide)
-                                    Expanded(
-                                      flex: 1,
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFE5F4F7),
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            c.amount,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: panelAccent(context),
-                                            ),
-                                          ),
-                                        ),
+                                if (wide)
+                                  const Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      'Bot Category',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  Expanded(
+                                  ),
+                                if (wide)
+                                  const Expanded(
                                     flex: 1,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 5,
+                                    child: Text(
+                                      'Recipients',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE8F5EF),
-                                        borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(
+                                    width: 135,
+                                    child: Text(
+                                      'Recipients',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
                                       ),
-                                      child: const Text(
-                                        'Completed',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: Color(0xFF07945B),
+                                    ),
+                                  ),
+                                if (wide)
+                                  const Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      'Amount',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                if (wide)
+                                  const Expanded(
+                                    flex: 1,
+                                    child: Text(
+                                      'Status',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(
+                                    width: 78,
+                                    child: Text(
+                                      'Status',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                if (wide)
+                                  const Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      'Actions',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox(
+                                    width: 96,
+                                    child: Text(
+                                      'Actions',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: rows.length,
+                              itemBuilder: (context, index) {
+                                final c = rows[index];
+                                final realIndex = _campaigns.indexOf(c);
+                                final checked = _selected.contains(realIndex);
+                                return Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: wide ? 10 : 5,
+                                    vertical: 9,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: index.isEven
+                                        ? Colors.white
+                                        : const Color(0xFFF8F9FC),
+                                    border: const Border(
+                                      bottom: BorderSide(
+                                        color: Color(0xFFDCE3ED),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 30,
+                                        child: Checkbox(
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          visualDensity: VisualDensity.compact,
+                                          value: checked,
+                                          activeColor: panelAccent(context),
+                                          onChanged: (v) => setState(() {
+                                            if (v == true) {
+                                              _selected.add(realIndex);
+                                            } else {
+                                              _selected.remove(realIndex);
+                                            }
+                                          }),
                                         ),
                                       ),
-                                    ),
+                                      if (wide)
+                                        Expanded(
+                                          flex: 3,
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 44,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 7,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFFE4F3F6,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(9),
+                                                ),
+                                                child: Column(
+                                                  children: [
+                                                    Text(
+                                                      c.date.split('/')[0] ==
+                                                              '10'
+                                                          ? 'OCT'
+                                                          : c.date.split(
+                                                              '/',
+                                                            )[0],
+                                                      style: TextStyle(
+                                                        fontSize: 9,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      c.date.split('/')[1],
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      c.date.split('/')[2],
+                                                      style: TextStyle(
+                                                        fontSize: 9,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(width: wide ? 10 : 5),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      c.name,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      c.time,
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                        color: muted,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      else
+                                        SizedBox(
+                                          width: 175,
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: 44,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 7,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0xFFE4F3F6,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(9),
+                                                ),
+                                                child: Column(
+                                                  children: [
+                                                    Text(
+                                                      c.date.split('/')[0] ==
+                                                              '10'
+                                                          ? 'OCT'
+                                                          : c.date.split(
+                                                              '/',
+                                                            )[0],
+                                                      style: TextStyle(
+                                                        fontSize: 9,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      c.date.split('/')[1],
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      c.date.split('/')[2],
+                                                      style: TextStyle(
+                                                        fontSize: 9,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      c.name,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: panelAccent(
+                                                          context,
+                                                        ),
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      c.time,
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                        color: muted,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      if (wide)
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            c.template,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: muted,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      if (wide)
+                                        const Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Promotional',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: muted,
+                                            ),
+                                          ),
+                                        ),
+                                      if (wide)
+                                        Expanded(
+                                          flex: 1,
+                                          child: Wrap(
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            spacing: 5,
+                                            runSpacing: 3,
+                                            children: [
+                                              Text(
+                                                '${c.count} Contacts',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  color: navy,
+                                                ),
+                                              ),
+                                              OutlinedButton.icon(
+                                                onPressed: () =>
+                                                    _showDeliveryDialog(c),
+                                                icon: const Icon(
+                                                  Icons.timelapse_rounded,
+                                                  size: 13,
+                                                  color: Color(0xFF20B85A),
+                                                ),
+                                                label: const Text(
+                                                  'View',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 7,
+                                                      ),
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    28,
+                                                  ),
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      else
+                                        SizedBox(
+                                          width: 135,
+                                          child: Wrap(
+                                            crossAxisAlignment:
+                                                WrapCrossAlignment.center,
+                                            spacing: 4,
+                                            runSpacing: 2,
+                                            children: [
+                                              Text(
+                                                '${c.count} Contacts',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  color: navy,
+                                                ),
+                                              ),
+                                              OutlinedButton.icon(
+                                                onPressed: () =>
+                                                    _showDeliveryDialog(c),
+                                                icon: const Icon(
+                                                  Icons.timelapse_rounded,
+                                                  size: 13,
+                                                  color: Color(0xFF20B85A),
+                                                ),
+                                                label: const Text(
+                                                  'View',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                      ),
+                                                  minimumSize: const Size(
+                                                    0,
+                                                    28,
+                                                  ),
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      if (wide)
+                                        Expanded(
+                                          flex: 1,
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFE5F4F7),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                c.amount,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  color: panelAccent(context),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      if (wide)
+                                        Expanded(
+                                          flex: 1,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFE8F5EF),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: const Text(
+                                              'Completed',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: Color(0xFF07945B),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        SizedBox(
+                                          width: 78,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFE8F5EF),
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                            ),
+                                            child: const Text(
+                                              'Completed',
+                                              textAlign: TextAlign.center,
+                                              softWrap: true,
+                                              style: TextStyle(
+                                                fontSize: 9,
+                                                height: 1.15,
+                                                color: Color(0xFF07945B),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      if (wide)
+                                        Expanded(
+                                          flex: 2,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              IconButton(
+                                                tooltip:
+                                                    'Download campaign report',
+                                                onPressed: () => saveCampaignCsv(
+                                                  context,
+                                                  'rcs',
+                                                  [c],
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.download_outlined,
+                                                  size: 18,
+                                                  color: navy,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                tooltip: 'Open RCS reports',
+                                                onPressed: () =>
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute<void>(
+                                                        builder: (_) =>
+                                                            const RCSReportsScreen(),
+                                                      ),
+                                                    ),
+                                                icon: const Icon(
+                                                  Icons.redo_rounded,
+                                                  size: 17,
+                                                  color: navy,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      else
+                                        SizedBox(
+                                          width: 96,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                tooltip:
+                                                    'Download campaign report',
+                                                constraints:
+                                                    const BoxConstraints(
+                                                      minWidth: 34,
+                                                      maxWidth: 34,
+                                                      minHeight: 34,
+                                                    ),
+                                                padding: EdgeInsets.zero,
+                                                onPressed: () => saveCampaignCsv(
+                                                  context,
+                                                  'rcs',
+                                                  [c],
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.download_outlined,
+                                                  size: 17,
+                                                  color: navy,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                tooltip: 'Open RCS reports',
+                                                constraints:
+                                                    const BoxConstraints(
+                                                      minWidth: 34,
+                                                      maxWidth: 34,
+                                                      minHeight: 34,
+                                                    ),
+                                                padding: EdgeInsets.zero,
+                                                onPressed: () =>
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute<void>(
+                                                        builder: (_) =>
+                                                            const RCSReportsScreen(),
+                                                      ),
+                                                    ),
+                                                icon: const Icon(
+                                                  Icons.redo_rounded,
+                                                  size: 17,
+                                                  color: navy,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  SizedBox(
-                                    width: 44,
-                                    child: IconButton(
-                                      tooltip: 'Campaign report',
-                                      onPressed: () => _showCombinedPanel([c]),
-                                      icon: const Icon(
-                                        Icons.download_outlined,
-                                        size: 17,
-                                        color: navy,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
               if (_selected.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
-                  child: Row(
-                    children: [
-                      Text(
-                        '${_selected.length} selected',
-                        style: const TextStyle(color: muted, fontSize: 12),
-                      ),
-                      const Spacer(),
-                      FilledButton.icon(
-                        onPressed: () => _showCombinedPanel(
-                          _selected.map((i) => _campaigns[i]).toList(),
-                        ),
-                        icon: const Icon(Icons.analytics_outlined, size: 16),
-                        label: const Text('View combined report'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: panelAccent(context),
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final compact = constraints.maxWidth < 430;
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            '${_selected.length} selected',
+                            style: const TextStyle(color: muted, fontSize: 12),
+                          ),
+                          FilledButton.icon(
+                            onPressed: () {
+                              final selectedCampaigns = _selected
+                                  .where((i) => i >= 0 && i < _campaigns.length)
+                                  .map((i) => _campaigns[i])
+                                  .toList();
+                              if (selectedCampaigns.isNotEmpty) {
+                                _showCombinedPanel(selectedCampaigns);
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.analytics_outlined,
+                              size: 16,
+                            ),
+                            label: Text(
+                              compact
+                                  ? 'View report'
+                                  : (_selected.length == 1
+                                        ? 'View campaign report'
+                                        : 'View combined report'),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: panelAccent(context),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
             ],
@@ -1272,4 +1666,76 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
       ),
     );
   }
+}
+
+/// Draws clean, proportional status arcs without the full red circle that
+/// previously made the delivery chart look incorrect.
+class _RcsStatusRingPainter extends CustomPainter {
+  const _RcsStatusRingPainter({
+    required this.total,
+    required this.sent,
+    required this.delivered,
+    required this.read,
+    required this.failed,
+  });
+
+  final int total;
+  final int sent;
+  final int delivered;
+  final int read;
+  final int failed;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 8.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    final colors = <Color>[
+      const Color(0xFFEF4444),
+      const Color(0xFFF59E0B),
+      const Color(0xFF3989FF),
+      const Color(0xFF16B86A),
+    ];
+    final values = <int>[failed, sent, delivered, read];
+    final radii = <double>[
+      size.width * .46,
+      size.width * .37,
+      size.width * .28,
+      size.width * .19,
+    ];
+    final track = Paint()
+      ..color = const Color(0xFFE9ECF2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round;
+
+    for (var i = 0; i < radii.length; i++) {
+      final radius = radii[i];
+      final rect = Rect.fromCircle(center: center, radius: radius);
+      canvas.drawArc(rect, 0, 2 * 3.141592653589793, false, track);
+
+      final fraction = total <= 0 ? 0.0 : (values[i] / total).clamp(0.0, 0.94);
+      if (fraction <= 0) continue;
+
+      final progress = Paint()
+        ..color = colors[i]
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round;
+      canvas.drawArc(
+        rect,
+        -3.141592653589793 / 2,
+        2 * 3.141592653589793 * fraction,
+        false,
+        progress,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RcsStatusRingPainter oldDelegate) =>
+      total != oldDelegate.total ||
+      sent != oldDelegate.sent ||
+      delivered != oldDelegate.delivered ||
+      read != oldDelegate.read ||
+      failed != oldDelegate.failed;
 }

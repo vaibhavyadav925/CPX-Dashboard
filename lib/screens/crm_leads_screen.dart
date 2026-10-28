@@ -38,6 +38,32 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
     super.dispose();
   }
 
+  Future<void> _exportLeads() => saveCsvFile(
+    context,
+    fileName: 'crm_leads',
+    headers: const [
+      'Name',
+      'Phone',
+      'Source',
+      'Status',
+      'Owner',
+      'Tags',
+      'Last Activity',
+    ],
+    rows: _visibleLeads.map((entry) {
+      final lead = entry.value;
+      return [
+        lead['name'],
+        lead['phone'],
+        lead['source'],
+        lead['status'],
+        lead['owner'],
+        lead['tags'],
+        lead['activity'],
+      ];
+    }),
+  );
+
   List<MapEntry<int, Map<String, String>>> get _visibleLeads {
     final q = _searchController.text.trim().toLowerCase();
     return _leads.asMap().entries.where((entry) {
@@ -247,8 +273,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                   ),
                   if (!compact) ...[
                     OutlinedButton.icon(
-                      onPressed: () =>
-                          showApiPendingMessage(context, 'lead export'),
+                      onPressed: _exportLeads,
                       icon: const Icon(Icons.download_outlined, size: 15),
                       label: const Text(
                         'Export',
@@ -304,8 +329,7 @@ class _CRMLeadsScreenState extends State<CRMLeadsScreen> {
                   runSpacing: 8,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () =>
-                          showApiPendingMessage(context, 'lead export'),
+                      onPressed: _exportLeads,
                       icon: const Icon(Icons.download_outlined, size: 15),
                       label: const Text('Export'),
                     ),

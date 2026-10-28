@@ -308,33 +308,48 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
             if (_selectedCampaigns.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: [
-                    Text(
-                      '${_selectedCampaigns.length} selected',
-                      style: const TextStyle(color: muted, fontSize: 12),
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () =>
-                          setState(() => _selectedCampaigns.clear()),
-                      child: const Text('Clear selection'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton.icon(
-                      onPressed: () => _showReport(
-                        _combinedWhatsApp(
-                          _selectedCampaigns.map((i) => _campaigns[i]).toList(),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth < 520;
+                    return Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          '${_selectedCampaigns.length} selected',
+                          style: const TextStyle(color: muted, fontSize: 12),
                         ),
-                      ),
-                      icon: const Icon(Icons.analytics_outlined, size: 16),
-                      label: const Text('View combined report'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: panelAccent(context),
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
+                        TextButton(
+                          onPressed: () =>
+                              setState(() => _selectedCampaigns.clear()),
+                          child: const Text('Clear selection'),
+                        ),
+                        FilledButton.icon(
+                          onPressed: () => _showReport(
+                            _combinedWhatsApp(
+                              _selectedCampaigns
+                                  .map((i) => _campaigns[i])
+                                  .toList(),
+                            ),
+                          ),
+                          icon: const Icon(Icons.analytics_outlined, size: 16),
+                          label: Text(
+                            compact ? 'View report' : 'View combined report',
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: panelAccent(context),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             const SizedBox(height: 18),
@@ -519,7 +534,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                               Text(campaign.count),
                               const SizedBox(width: 7),
                               OutlinedButton.icon(
-                                onPressed: () => _showReport(campaign),
+                                onPressed: () => _showDeliveryStatus(campaign),
                                 icon: const Icon(
                                   Icons.pie_chart_outline,
                                   size: 13,
@@ -587,19 +602,27 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                             children: [
                               IconButton(
                                 tooltip: 'Download report',
-                                onPressed: () => _showReport(campaign),
+                                onPressed: () => saveCampaignCsv(
+                                  context,
+                                  'whatsapp',
+                                  [campaign],
+                                ),
                                 icon: const Icon(
                                   Icons.download_outlined,
                                   size: 17,
                                 ),
                               ),
                               IconButton(
-                                tooltip: 'Campaign details',
-                                onPressed: () => _showReport(campaign),
-                                icon: const Icon(
-                                  Icons.refresh_rounded,
-                                  size: 17,
-                                ),
+                                tooltip: 'Open WhatsApp reports',
+                                onPressed: () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const WhatsAppReportsScreen(),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.reply_rounded, size: 17),
                               ),
                             ],
                           ),
@@ -671,6 +694,35 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
     return [months[m - 1], '$d', y];
   }
 
+  void _showDeliveryStatus(CampaignRecord campaign) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        final width = MediaQuery.of(dialogContext).size.width;
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          backgroundColor: Colors.transparent,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 560,
+              maxHeight: MediaQuery.of(dialogContext).size.height * .88,
+            ),
+            child: _WhatsAppDeliveryStatusDialog(
+              campaign: campaign,
+              onClose: () => Navigator.of(dialogContext).pop(),
+              compact: width < 600,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showCampaignReport(CampaignRecord campaign) {
     showGeneralDialog<void>(
       context: context,
@@ -680,26 +732,29 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
       transitionDuration: const Duration(milliseconds: 220),
       pageBuilder: (dialogContext, animation, secondaryAnimation) {
         final screenWidth = MediaQuery.of(dialogContext).size.width;
-        return Align(
-          alignment: Alignment.centerRight,
-          child: Material(
-            color: Colors.transparent,
-            child: SizedBox(
-              width: screenWidth < 440 ? screenWidth : 414,
-              height: MediaQuery.of(dialogContext).size.height,
-              child: _CampaignReportSidePanel(
-                campaign: campaign,
-                onClose: () => Navigator.of(dialogContext).pop(),
-                onDownload: (label) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '$label is not connected to a report service yet.',
-                      ),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
+        final media = MediaQuery.of(dialogContext);
+        final safeHeight =
+            media.size.height - media.padding.top - media.padding.bottom;
+        return SafeArea(
+          top: true,
+          bottom: true,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Material(
+              color: Colors.transparent,
+              child: SizedBox(
+                width: screenWidth < 440 ? screenWidth : 414,
+                height: safeHeight,
+                child: _CampaignReportSidePanel(
+                  campaign: campaign,
+                  onClose: () => Navigator.of(dialogContext).pop(),
+                  onDownload: (label) => saveCampaignCsv(
+                    context,
+                    'whatsapp',
+                    [campaign],
+                    statsOnly: label == 'Download Stats',
+                  ),
+                ),
               ),
             ),
           ),
@@ -751,4 +806,411 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
     // as the panel shown when opening an individual campaign report.
     _showCampaignReport(c);
   }
+}
+
+class _WhatsAppDeliveryStatusDialog extends StatelessWidget {
+  const _WhatsAppDeliveryStatusDialog({
+    required this.campaign,
+    required this.onClose,
+    required this.compact,
+  });
+
+  final CampaignRecord campaign;
+  final VoidCallback onClose;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = campaign.total;
+    final sent = campaign.sent;
+    final delivered = campaign.delivered;
+    final read = campaign.read;
+    final failed = campaign.failed;
+    final unread = (total - read - delivered - sent - failed).clamp(0, total);
+
+    String percent(int value) =>
+        total <= 0 ? '0.00%' : '${(value / total * 100).toStringAsFixed(2)}%';
+
+    final rows = <_DeliveryMetric>[
+      _DeliveryMetric('Sent', sent, const Color(0xFFFFA000), Icons.check),
+      _DeliveryMetric(
+        'Delivered',
+        delivered,
+        const Color(0xFF3478F6),
+        Icons.done_all,
+      ),
+      _DeliveryMetric('Read', read, const Color(0xFF16B978), Icons.done_all),
+      _DeliveryMetric(
+        'Failed',
+        failed,
+        const Color(0xFFFF454F),
+        Icons.warning_amber_rounded,
+      ),
+      _DeliveryMetric(
+        'Unread',
+        unread,
+        const Color(0xFF8B5CF6),
+        Icons.chat_bubble_outline,
+      ),
+    ];
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 12, 14),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE4F7EC),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.query_stats_rounded,
+                      color: Color(0xFF18B96B),
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Delivery Status',
+                          style: TextStyle(
+                            color: Color(0xFF202B3C),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Campaign message breakdown',
+                          style: TextStyle(
+                            color: Color(0xFF718096),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFDCE5EE)),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.sensors, size: 12, color: Color(0xFF22B573)),
+                        SizedBox(width: 3),
+                        Text(
+                          'Live',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF6C8794),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: onClose,
+                    icon: const Icon(
+                      Icons.close,
+                      size: 19,
+                      color: Color(0xFF98A2B3),
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+              child: compact
+                  ? Column(
+                      children: [
+                        _WhatsAppDeliveryRing(
+                          total: total,
+                          rows: rows,
+                          size: 142,
+                        ),
+                        const SizedBox(height: 14),
+                        _deliveryBreakdown(rows, percent, total),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 180,
+                          child: Center(
+                            child: _WhatsAppDeliveryRing(
+                              total: total,
+                              rows: rows,
+                              size: 158,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _deliveryBreakdown(rows, percent, total),
+                        ),
+                      ],
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F8FB),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE8ECF2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.campaign_outlined,
+                      size: 17,
+                      color: Color(0xFF74839A),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        campaign.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF283449),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$total total',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF718096),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _deliveryBreakdown(
+    List<_DeliveryMetric> rows,
+    String Function(int) percent,
+    int total,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(7),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFE0E6EF)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE9F5EF),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Total',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF344054),
+                    ),
+                  ),
+                ),
+                Text(
+                  '$total',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF344054),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          for (final row in rows)
+            Container(
+              margin: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              decoration: BoxDecoration(
+                color: rows.indexOf(row).isOdd
+                    ? const Color(0xFFF7F8FA)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Row(
+                children: [
+                  Icon(row.icon, size: 14, color: row.color),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      row.label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF344054),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '${row.value}',
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF344054),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 48,
+                    child: Text(
+                      percent(row.value),
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF7A879B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeliveryMetric {
+  const _DeliveryMetric(this.label, this.value, this.color, this.icon);
+  final String label;
+  final int value;
+  final Color color;
+  final IconData icon;
+}
+
+class _WhatsAppDeliveryRing extends StatelessWidget {
+  const _WhatsAppDeliveryRing({
+    required this.total,
+    required this.rows,
+    required this.size,
+  });
+
+  final int total;
+  final List<_DeliveryMetric> rows;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _WhatsAppDeliveryRingPainter(total: total, rows: rows),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Total',
+                style: TextStyle(fontSize: 9, color: Color(0xFF8793A6)),
+              ),
+              Text(
+                '$total',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF202B3C),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WhatsAppDeliveryRingPainter extends CustomPainter {
+  _WhatsAppDeliveryRingPainter({required this.total, required this.rows});
+  final int total;
+  final List<_DeliveryMetric> rows;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxRadius = size.shortestSide * .45;
+    final basePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7
+      ..color = const Color(0xFFEAEDF3);
+    for (var i = 0; i < 4; i++) {
+      final radius = maxRadius - i * 13;
+      canvas.drawCircle(center, radius, basePaint);
+    }
+    if (total <= 0) return;
+    final active = [rows[3], rows[0], rows[1], rows[2]];
+    for (var i = 0; i < active.length; i++) {
+      final metric = active[i];
+      final radius = maxRadius - i * 13;
+      final sweep =
+          (metric.value / total).clamp(0.0, 1.0) * 2 * 3.141592653589793;
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..strokeCap = StrokeCap.round
+        ..color = metric.color;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -3.141592653589793 / 2,
+        sweep,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WhatsAppDeliveryRingPainter oldDelegate) =>
+      oldDelegate.total != total || oldDelegate.rows != rows;
 }
