@@ -37,18 +37,32 @@ class _AuthEntryScreenState extends State<AuthEntryScreen> {
 
   void _continueToDashboard() {
     if (!_formKey.currentState!.validate()) return;
-    if (_isSignup &&
-        _passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Passwords do not match.')));
+
+    // Demo credentials for local testing only.
+    const demoEmail = 'admin@cpxboat.com';
+    const demoPassword = 'Cpx@12345';
+
+    if (_isSignup) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Signup is unavailable in demo login mode.'),
+        ),
+      );
       return;
     }
-    // UI-only preview: this form does not verify credentials or create a
-    // secure account. Connect an authentication provider before deployment.
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const DashboardScreen()),
-    );
+
+    final enteredEmail = _emailController.text.trim();
+    final enteredPassword = _passwordController.text;
+
+    if (enteredEmail == demoEmail && enteredPassword == demoPassword) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const DashboardScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email or password.')),
+      );
+    }
   }
 
   Future<void> _animateAndContinue() async {

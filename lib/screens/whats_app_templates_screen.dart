@@ -722,7 +722,9 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
           width: 340,
           color: const Color(0xFFF3F5FA),
           padding: const EdgeInsets.fromLTRB(8, 34, 18, 18),
-          child: _phonePreview(),
+          // Keep the preview pane scrollable so its contents cannot overflow
+          // the available height and display Flutter's yellow/black warning stripe.
+          child: SingleChildScrollView(child: _phonePreview()),
         ),
       ],
     );
@@ -732,6 +734,7 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
     final body = _bodyController.text.trim().isEmpty
         ? 'Message body preview...'
         : _bodyController.text;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -766,6 +769,7 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
             borderRadius: BorderRadius.circular(32),
             child: Column(
               children: [
+                // Fixed WhatsApp header
                 Container(
                   height: 68,
                   padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -813,87 +817,97 @@ class _WhatsAppTemplatesScreenState extends State<WhatsAppTemplatesScreen> {
                     ],
                   ),
                 ),
+
+                // Scrollable message area prevents long messages overflowing
                 Expanded(
                   child: Container(
                     width: double.infinity,
                     color: const Color(0xFFE8DED2),
                     padding: const EdgeInsets.all(12),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 230),
-                        padding: const EdgeInsets.all(11),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (_headerType == 'Text' &&
-                                _headerTextController.text.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Text(
-                                  _headerTextController.text,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            if (_headerType != 'None' && _headerType != 'Text')
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Icon(
-                                  _headerType == 'Image'
-                                      ? Icons.image_outlined
-                                      : _headerType == 'Video'
-                                      ? Icons.videocam_outlined
-                                      : Icons.description_outlined,
-                                  color: muted,
-                                  size: 32,
-                                ),
-                              ),
-                            Text(
-                              body,
-                              style: const TextStyle(
-                                color: Color(0xFF344054),
-                                fontSize: 12,
-                              ),
-                            ),
-                            if (_footerController.text.trim().isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  _footerController.text,
-                                  style: const TextStyle(
-                                    color: muted,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ),
-                            if (_buttonLabel.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Center(
+                    child: SingleChildScrollView(
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 230),
+                          padding: const EdgeInsets.all(11),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_headerType == 'Text' &&
+                                  _headerTextController.text.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
                                   child: Text(
-                                    _buttonLabel,
+                                    _headerTextController.text,
                                     style: const TextStyle(
-                                      color: Color(0xFF168DCE),
-                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
+
+                              if (_headerType != 'None' &&
+                                  _headerType != 'Text')
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: Icon(
+                                    _headerType == 'Image'
+                                        ? Icons.image_outlined
+                                        : _headerType == 'Video'
+                                        ? Icons.videocam_outlined
+                                        : Icons.description_outlined,
+                                    color: muted,
+                                    size: 32,
+                                  ),
+                                ),
+
+                              Text(
+                                body,
+                                style: const TextStyle(
+                                  color: Color(0xFF344054),
+                                  fontSize: 12,
+                                ),
                               ),
-                            const Align(
-                              alignment: Alignment.bottomRight,
-                              child: Text(
-                                '02:45 PM',
-                                style: TextStyle(color: muted, fontSize: 9),
+
+                              if (_footerController.text.trim().isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    _footerController.text,
+                                    style: const TextStyle(
+                                      color: muted,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+
+                              if (_buttonLabel.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Center(
+                                    child: Text(
+                                      _buttonLabel,
+                                      style: const TextStyle(
+                                        color: Color(0xFF168DCE),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                              const Align(
+                                alignment: Alignment.bottomRight,
+                                child: Text(
+                                  '02:45 PM',
+                                  style: TextStyle(color: muted, fontSize: 9),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

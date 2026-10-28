@@ -2,19 +2,39 @@ part of '../app.dart';
 
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
+
   @override
   State<AIAssistantScreen> createState() => _AIAssistantScreenState();
 }
 
 class _AIAssistantScreenState extends State<AIAssistantScreen> {
   final TextEditingController _key = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+
   bool _visible = false;
   bool _stepsOpen = true;
 
   @override
   void dispose() {
     _key.dispose();
+    _messageController.dispose();
     super.dispose();
+  }
+
+  void _sendMessage() {
+    final message = _messageController.text.trim();
+
+    if (message.isEmpty) return;
+
+    _messageController.clear();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Message received. Connect a secure AI backend to generate a response.',
+        ),
+      ),
+    );
   }
 
   void _showKeyDialog() {
@@ -101,7 +121,11 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                     child: Column(
                       children: [
                         InkWell(
-                          onTap: () => refresh(() => _stepsOpen = !_stepsOpen),
+                          onTap: () {
+                            refresh(() {
+                              _stepsOpen = !_stepsOpen;
+                            });
+                          },
                           child: Padding(
                             padding: const EdgeInsets.all(11),
                             child: Row(
@@ -195,7 +219,11 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       suffixIcon: IconButton(
-                        onPressed: () => refresh(() => _visible = !_visible),
+                        onPressed: () {
+                          refresh(() {
+                            _visible = !_visible;
+                          });
+                        },
                         icon: Icon(
                           _visible
                               ? Icons.visibility_off_outlined
@@ -238,10 +266,12 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                         ),
                       ),
                       TextButton.icon(
-                        onPressed: () => showApiPendingMessage(
-                          context,
-                          'the external AI provider console',
-                        ),
+                        onPressed: () {
+                          showApiPendingMessage(
+                            context,
+                            'the external AI provider console',
+                          );
+                        },
                         icon: const Icon(Icons.open_in_new, size: 13),
                         label: const Text(
                           'Open Anthropic console',
@@ -296,7 +326,10 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                       height: 38,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [panelAccent(context), Color(0xFF8B5CF6)],
+                          colors: [
+                            panelAccent(context),
+                            const Color(0xFF8B5CF6),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(11),
                       ),
@@ -376,25 +409,62 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             ),
           ),
         ),
+
+        // Message input and send button
         Container(
           padding: const EdgeInsets.all(10),
           decoration: const BoxDecoration(
             border: Border(top: BorderSide(color: Color(0xFFD8DFEA))),
           ),
-          child: TextField(
-            minLines: 1,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: 'Connect your Claude API key to start',
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 10,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  minLines: 1,
+                  maxLines: 3,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendMessage(),
+                  decoration: InputDecoration(
+                    hintText: 'Ask AI anything...',
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+              const SizedBox(width: 8),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _messageController,
+                builder: (context, value, child) {
+                  final canSend = value.text.trim().isNotEmpty;
+
+                  return IconButton(
+                    onPressed: canSend ? _sendMessage : null,
+                    tooltip: 'Send message',
+                    style: IconButton.styleFrom(
+                      backgroundColor: canSend
+                          ? panelAccent(context)
+                          : const Color(0xFFE1E5ED),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFFE1E5ED),
+                      disabledForegroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      fixedSize: const Size(44, 44),
+                    ),
+                    icon: const Icon(Icons.send_rounded, size: 19),
+                  );
+                },
               ),
-            ),
+            ],
           ),
         ),
       ],
@@ -421,7 +491,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                     height: 34,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [panelAccent(context), Color(0xFF8B5CF6)],
+                        colors: [panelAccent(context), const Color(0xFF8B5CF6)],
                       ),
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -547,10 +617,12 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 FilledButton.icon(
-                                  onPressed: () => showApiPendingMessage(
-                                    context,
-                                    'AI chat creation',
-                                  ),
+                                  onPressed: () {
+                                    showApiPendingMessage(
+                                      context,
+                                      'AI chat creation',
+                                    );
+                                  },
                                   icon: const Icon(Icons.add, size: 15),
                                   label: const Text('New chat'),
                                   style: FilledButton.styleFrom(
