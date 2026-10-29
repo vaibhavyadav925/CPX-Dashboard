@@ -41,6 +41,9 @@ flutter:
   assets:
     - assets/logo.png
     - assets/whatsapp.png
+    - assets/insta_logo.png
+    - assets/fb_logo.png
+    - assets/mail.png
 
 flutter_launcher_icons:
   android: true

@@ -71,7 +71,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
     child: Stack(
       alignment: Alignment.center,
       children: [
-        Icon(icon, size: 17, color: const Color(0xFF66748A)),
+        Icon(icon, size: 17, color: const Color.fromARGB(255, 254, 254, 254)),
         if (badge != null)
           Positioned(
             right: 3,
@@ -167,11 +167,11 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               _responsiveGrid(compact, [
-                _availableCard('Instagram', Icons.camera_alt_rounded),
-                _availableCard('Facebook', Icons.facebook_rounded),
-                _availableCard('Email', Icons.mail_rounded),
+                _availableCard('Instagram', 'assets/insta_logo.png'),
+                _availableCard('Facebook', 'assets/fb_logo.png'),
+                _availableCard('Email', 'assets/mail.png'),
                 _availableCard('Web Widget', Icons.web_rounded),
               ]),
               const SizedBox(height: 10),
@@ -199,7 +199,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                         children: [
                           Icon(
                             Icons.hub_outlined,
-                            size: 20,
+                            size: 30,
                             color: panelAccent(context),
                           ),
                           const SizedBox(width: 10),
@@ -349,7 +349,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
     ),
   );
 
-  Widget _availableCard(String name, IconData icon) => Container(
+  Widget _availableCard(String name, dynamic icon) => Container(
     constraints: const BoxConstraints(minHeight: 108),
     padding: const EdgeInsets.all(10),
     decoration: BoxDecoration(
@@ -364,16 +364,34 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
         Row(
           children: [
             Container(
-              width: 24,
-              height: 24,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: const Color(0xFFA4A8AD),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(icon, color: Colors.white, size: 15),
+              child: icon is String
+                  ? Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Image.asset(
+                        icon,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.image_not_supported_outlined,
+                              color: Colors.white,
+                              size: 45,
+                            ),
+                      ),
+                    )
+                  : Icon(icon as IconData, color: Colors.white, size: 15),
             ),
             const Spacer(),
-            const Icon(Icons.lock_outline, size: 12, color: muted),
+            const Icon(
+              Icons.lock_outline,
+              size: 12,
+              color: Color.fromARGB(255, 252, 252, 253),
+            ),
           ],
         ),
         const SizedBox(height: 7),
@@ -524,10 +542,10 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
             final entries = <List<String>>[
               ['Channel Name', 'RCS'],
               ['Status', 'Connected'],
-              ['Username', 'ajay'],
+              ['Username', 'Vaibhav'],
               ['First Name', '--'],
               ['Last Name', '--'],
-              ['Mobile Number', '7337522120'],
+              ['Mobile Number', '6392368875'],
               ['Email Id', 'ajay@webtechagel.com'],
               ['Country', 'India'],
             ];
@@ -789,7 +807,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                 ),
               ),
             ],
-            rows: ['ajay']
+            rows: ['Vaibhav']
                 .where((u) => u.contains(_searchController.text.toLowerCase()))
                 .map(
                   (u) => DataRow(
@@ -802,11 +820,11 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'ajay',
+                                'Vaibhav',
                                 style: TextStyle(fontSize: 10, color: navy),
                               ),
                               Text(
-                                'ajay@webtechagel.com',
+                                'Vaibhav@webtechagel.com',
                                 style: TextStyle(fontSize: 9, color: muted),
                               ),
                             ],
@@ -933,9 +951,9 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
         final cols = constraints.maxWidth < 650 ? 1 : 3;
         const entries = <List<String>>[
           ['PE Registration ID', '1201159186502183560'],
-          ['Registered Mobile Number', '7337522120'],
+          ['Registered Mobile Number', '6392368875'],
           ['Country', 'India'],
-          ['Registered E-mail ID', 'ajay@webtechagel.com'],
+          ['Registered E-mail ID', 'Vaibhav@webtechagel.com'],
           ['Organization name', 'Webtechage-Manager'],
         ];
         return Wrap(
