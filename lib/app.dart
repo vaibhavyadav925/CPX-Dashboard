@@ -25,6 +25,7 @@ part 'screens/whats_app_business_profile_screen.dart';
 part 'screens/whats_app_quick_links_screen.dart';
 part 'screens/sms_dashboard_screen.dart';
 part 'screens/sms_campaigns_screen.dart';
+part 'screens/sms_sender_ids_screen.dart';
 part 'screens/rcs_dashboard_screen.dart';
 part 'screens/rcs_new_template_screen.dart';
 part 'screens/sms_templates_screen.dart';
@@ -156,116 +157,114 @@ void showApiPendingMessage(BuildContext context, String action) {
 }
 
 String encodeCsv(List<String> headers, Iterable<Iterable<Object?>> rows) {
-    String encodeField(Object? value) {
-      final text = value?.toString() ?? '';
-      final formulaLike =
-          value is String && RegExp(r'^[\s]*[=+\-@]').hasMatch(text);
-      final safeText = formulaLike ? "'$text" : text;
-      return '"${safeText.replaceAll('"', '""')}"';
-    }
+  String encodeField(Object? value) {
+    final text = value?.toString() ?? '';
+    final formulaLike =
+        value is String && RegExp(r'^[\s]*[=+\-@]').hasMatch(text);
+    final safeText = formulaLike ? "'$text" : text;
+    return '"${safeText.replaceAll('"', '""')}"';
+  }
 
-    final table = <Iterable<Object?>>[headers, ...rows];
-    return table.map((row) => row.map(encodeField).join(',')).join('\r\n');
+  final table = <Iterable<Object?>>[headers, ...rows];
+  return table.map((row) => row.map(encodeField).join(',')).join('\r\n');
 }
 
 Future<void> saveCsvFile(
-    BuildContext context, {
-    required String fileName,
-    required List<String> headers,
-    required Iterable<Iterable<Object?>> rows,
+  BuildContext context, {
+  required String fileName,
+  required List<String> headers,
+  required Iterable<Iterable<Object?>> rows,
 }) async {
-    final safeName = fileName
-        .replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_')
-        .replaceAll(RegExp(r'_+'), '_');
-    final csv = '\uFEFF${encodeCsv(headers, rows)}';
+  final safeName = fileName
+      .replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_')
+      .replaceAll(RegExp(r'_+'), '_');
+  final csv = '\uFEFF${encodeCsv(headers, rows)}';
 
-    try {
-      final savedPath = await FileSaver.instance.saveAs(
-        name: safeName.isEmpty ? 'export' : safeName,
-        bytes: Uint8List.fromList(utf8.encode(csv)),
-        fileExtension: 'csv',
-        mimeType: MimeType.custom,
-        customMimeType: 'text/csv',
-        dialogTitle: 'Save CSV file',
+  try {
+    final savedPath = await FileSaver.instance.saveAs(
+      name: safeName.isEmpty ? 'export' : safeName,
+      bytes: Uint8List.fromList(utf8.encode(csv)),
+      fileExtension: 'csv',
+      mimeType: MimeType.custom,
+      customMimeType: 'text/csv',
+      dialogTitle: 'Save CSV file',
+    );
+    if (!context.mounted || savedPath == null) return;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('CSV file saved: $safeName.csv')));
+  } on Exception catch (error) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('Could not save CSV file: $error')),
       );
-      if (!context.mounted || savedPath == null) return;
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text('CSV file saved: $safeName.csv')),
-        );
-    } on Exception catch (error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text('Could not save CSV file: $error')),
-        );
-    }
+  }
 }
 
 const campaignCsvHeaders = [
-    'Campaign',
-    'Template',
-    'Account',
-    'Phone',
-    'Recipients',
-    'Amount',
-    'Total',
-    'Sent',
-    'Delivered',
-    'Read',
-    'Failed',
-    'Date',
-    'Time',
+  'Campaign',
+  'Template',
+  'Account',
+  'Phone',
+  'Recipients',
+  'Amount',
+  'Total',
+  'Sent',
+  'Delivered',
+  'Read',
+  'Failed',
+  'Date',
+  'Time',
 ];
 
 List<Object?> campaignCsvRow(CampaignRecord campaign) => [
-    campaign.name,
-    campaign.template,
-    campaign.account,
-    campaign.phone,
-    campaign.count,
-    campaign.amount,
-    campaign.total,
-    campaign.sent,
-    campaign.delivered,
-    campaign.read,
-    campaign.failed,
-    campaign.date,
-    campaign.time,
+  campaign.name,
+  campaign.template,
+  campaign.account,
+  campaign.phone,
+  campaign.count,
+  campaign.amount,
+  campaign.total,
+  campaign.sent,
+  campaign.delivered,
+  campaign.read,
+  campaign.failed,
+  campaign.date,
+  campaign.time,
 ];
 
 Future<void> saveCampaignCsv(
-    BuildContext context,
-    String channel,
-    Iterable<CampaignRecord> campaigns, {
-    bool statsOnly = false,
+  BuildContext context,
+  String channel,
+  Iterable<CampaignRecord> campaigns, {
+  bool statsOnly = false,
 }) {
-    if (!statsOnly) {
-      return saveCsvFile(
-        context,
-        fileName: '${channel}_campaign_report',
-        headers: campaignCsvHeaders,
-        rows: campaigns.map(campaignCsvRow),
-      );
-    }
-
+  if (!statsOnly) {
     return saveCsvFile(
       context,
-      fileName: '${channel}_campaign_stats',
-      headers: const ['Campaign', 'Metric', 'Value'],
-      rows: [
-        for (final campaign in campaigns) ...[
-          [campaign.name, 'Total', campaign.total],
-          [campaign.name, 'Sent', campaign.sent],
-          [campaign.name, 'Delivered', campaign.delivered],
-          [campaign.name, 'Read', campaign.read],
-          [campaign.name, 'Failed', campaign.failed],
-        ],
-      ],
+      fileName: '${channel}_campaign_report',
+      headers: campaignCsvHeaders,
+      rows: campaigns.map(campaignCsvRow),
     );
+  }
+
+  return saveCsvFile(
+    context,
+    fileName: '${channel}_campaign_stats',
+    headers: const ['Campaign', 'Metric', 'Value'],
+    rows: [
+      for (final campaign in campaigns) ...[
+        [campaign.name, 'Total', campaign.total],
+        [campaign.name, 'Sent', campaign.sent],
+        [campaign.name, 'Delivered', campaign.delivered],
+        [campaign.name, 'Read', campaign.read],
+        [campaign.name, 'Failed', campaign.failed],
+      ],
+    ],
+  );
 }
 
 class PanelThemeController extends ChangeNotifier {
@@ -1242,7 +1241,7 @@ class _CampaignProgressRow extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              ), 
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -3675,6 +3674,13 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
     if (item == 'Campaigns' && parentGroup == 'SMS-App') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const SMSCampaignsScreen()),
+      );
+      return;
+    }
+
+    if (item == 'Sender IDs' && parentGroup == 'SMS-App') {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const SMSSenderIdsScreen()),
       );
       return;
     }

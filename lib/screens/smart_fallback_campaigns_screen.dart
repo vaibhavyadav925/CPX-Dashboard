@@ -802,7 +802,7 @@ class _SmartFallbackCampaignsScreenState
           if (_showReport && selectedCampaign != null)
             Positioned.fill(
               child: Material(
-                color: Colors.black.withOpacity(0.38),
+                color: Colors.black.withValues(alpha: 0.38),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: SizedBox(
@@ -1736,7 +1736,7 @@ class _SmartFallbackNewCampaignScreenState
     children: [
       _fieldLabel(label, required: label != 'Third channel'),
       DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         isExpanded: true,
         decoration: _inputDecoration('Select channel'),
         items: options
@@ -1881,7 +1881,7 @@ class _SmartFallbackNewCampaignScreenState
               children: [
                 _fieldLabel('Template', required: true),
                 DropdownButtonFormField<String>(
-                  value: value,
+                  initialValue: value,
                   isExpanded: true,
                   decoration: _inputDecoration('Select Template'),
                   items: const [
@@ -1980,7 +1980,7 @@ class _SmartFallbackNewCampaignScreenState
         const SizedBox(height: 12),
         if (_numberSource == 'Phonebook') ...[
           DropdownButtonFormField<String>(
-            value: _phonebookGroup,
+            initialValue: _phonebookGroup,
             isExpanded: true,
             decoration: _inputDecoration('Select a contact group'),
             items: const [

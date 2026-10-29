@@ -175,4 +175,31 @@ void main() {
       expect(exception, isNull, reason: 'Viewport width $width');
     }
   });
+
+  testWidgets('SMS Sender IDs page renders responsively and removes an ID', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    for (final width in [360.0, 1440.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pumpWidget(const MaterialApp(home: SMSSenderIdsScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sender IDs'), findsOneWidget);
+      expect(find.text('WBTCSL'), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'Viewport width $width');
+    }
+
+    await tester.tap(find.byTooltip('Remove sender ID'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remove'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('WBTCSL'), findsNothing);
+    expect(find.text('No sender IDs are available.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
