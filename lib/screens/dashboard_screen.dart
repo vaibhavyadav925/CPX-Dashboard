@@ -422,7 +422,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
+        
         children: [
           Row(
             children: [
@@ -511,7 +511,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       Icons.grid_view_rounded,
 
       Icons.apps_rounded,
-
+ 
       Icons.analytics_outlined,
 
       Icons.auto_awesome_outlined,

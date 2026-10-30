@@ -497,9 +497,6 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
 
 PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
   final screenWidth = MediaQuery.sizeOf(context).width;
-  // Keep the compact header close
-  //to the supplied mobile reference while
-  // retaining the same shared app bar on every page.
   final compact = screenWidth < 600;
   final toolbarHeight = screenWidth < 600
       ? 56.0

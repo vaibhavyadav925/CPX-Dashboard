@@ -546,7 +546,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
               ['First Name', '--'],
               ['Last Name', '--'],
               ['Mobile Number', '6392368875'],
-              ['Email Id', 'ajay@webtechagel.com'],
+              ['Email Id', 'Vaibhav@webtechagel.com'],
               ['Country', 'India'],
             ];
             return Wrap(
@@ -954,7 +954,7 @@ class _ChannelsInfoScreenState extends State<ChannelsInfoScreen> {
           ['Registered Mobile Number', '6392368875'],
           ['Country', 'India'],
           ['Registered E-mail ID', 'Vaibhav@webtechagel.com'],
-          ['Organization name', 'Webtechage-Manager'],
+          ['Organization name', 'Webtechage'],
         ];
         return Wrap(
           spacing: 16,
