@@ -66,7 +66,7 @@ class _SMSCampaignsScreenState extends State<SMSCampaignsScreen> {
     child: OutlinedButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
-        backgroundColor: const Color(0xFFF8F9FC),
+        backgroundColor: pageColor,
         foregroundColor: navy,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         side: BorderSide(color: borderColor),

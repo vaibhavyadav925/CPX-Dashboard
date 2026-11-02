@@ -20,50 +20,6 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
 
   bool applied = true;
 
-  final rowsByChannel = const <String, List<List<String>>>{
-    'RCS': [
-      ['ajay', '—', '13 Oct 2026', '—', '22', '22', '0', '0', '0', '0'],
-
-      ['ajay', '—', '12 Oct 2026', '—', '1', '0', '0', '0', '1', '0'],
-
-      ['ajay', '—', '05 Oct 2026', '—', '1', '0', '1', '0', '0', '0'],
-    ],
-
-    'Whatsapp': [
-      [
-        'ajay',
-
-        '—',
-
-        '13 Oct 2026',
-
-        'Promotional',
-        '18',
-        '18',
-        '16',
-        '12',
-        '2',
-        '4',
-      ],
-      ['ajay', '—', '11 Oct 2026', 'Utility', '6', '6', '5', '4', '1', '2'],
-    ],
-    'SMS': [
-      ['ajay', '—', '13 Oct 2026', 'OTP', '24', '24', '23', '0', '1', '0'],
-      [
-        'ajay',
-        '—',
-        '09 Oct 2026',
-        'Promotional',
-        '12',
-        '12',
-        '11',
-        '0',
-        '1',
-        '0',
-      ],
-    ],
-  };
-
   Future<void> _pickDate({required bool start}) async {
     final initial = (start ? fromDate : toDate) ?? DateTime.now();
 
@@ -96,7 +52,7 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final rows = rowsByChannel[reportChannel]!;
+    final rows = dashboardReportRowsByChannel[reportChannel]!;
 
     final initiated = rows.fold<int>(0, (sum, row) => sum + int.parse(row[4]));
 
@@ -417,7 +373,7 @@ class _MISReportsScreenState extends State<MISReportsScreen> {
 
                       decoration: _filterDecoration(),
 
-                      items: const ['All users', 'ajay', 'Admin']
+                      items: const ['All users', 'NA', 'Admin']
                           .map(
                             (v) => DropdownMenuItem(
                               value: v,

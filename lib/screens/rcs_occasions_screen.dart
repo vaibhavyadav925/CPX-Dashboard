@@ -49,7 +49,7 @@ class _RCSOccasionsScreenState extends State<RCSOccasionsScreen> {
       barrierDismissible: true,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: premiumSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),

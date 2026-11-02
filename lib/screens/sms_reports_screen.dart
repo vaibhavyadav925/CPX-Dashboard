@@ -45,20 +45,13 @@ class _SMSReportsScreenState extends State<SMSReportsScreen> {
             24,
           ),
           children: [
-            const Text(
-              'Reports',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: navy,
-              ),
+            const PremiumPageHeader(
+              title: 'Reports',
+              subtitle: 'Delivery performance across your SMS campaigns.',
+              eyebrow: 'SMS analytics',
+              icon: Icons.insights_rounded,
             ),
-            const SizedBox(height: 3),
-            const Text(
-              'Delivery performance across all your SMS campaigns.',
-              style: TextStyle(fontSize: 12, color: muted),
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(

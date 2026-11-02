@@ -190,7 +190,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
       builder: (dialogContext) {
         final wide = MediaQuery.of(dialogContext).size.width >= 620;
         return Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: premiumSurface,
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 24,
@@ -453,9 +453,12 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                       children: [
                         Row(
                           children: [
-                            const CircleAvatar(
-                              backgroundColor: Colors.white,
-                              child: Icon(Icons.chat, color: Color(0xFF2879E8)),
+                            CircleAvatar(
+                              backgroundColor: premiumSurface,
+                              child: const Icon(
+                                Icons.chat,
+                                color: Color(0xFF2879E8),
+                              ),
                             ),
                             const SizedBox(width: 10),
                             const Expanded(
@@ -651,25 +654,22 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                           children: [
                             Expanded(
                               child: OutlinedButton(
-                                  onPressed: () => saveCampaignCsv(
-                                    context,
-                                    'rcs',
-                                    [c],
-                                  ),
-                                  child: const Text('Download Report'),
-                                ),
+                                onPressed: () =>
+                                    saveCampaignCsv(context, 'rcs', [c]),
+                                child: const Text('Download Report'),
+                              ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton(
-                                  onPressed: () => saveCampaignCsv(
-                                    context,
-                                    'rcs',
-                                    [c],
-                                    statsOnly: true,
-                                  ),
-                                  child: const Text('Download Stats'),
+                                onPressed: () => saveCampaignCsv(
+                                  context,
+                                  'rcs',
+                                  [c],
+                                  statsOnly: true,
                                 ),
+                                child: const Text('Download Stats'),
+                              ),
                             ),
                           ],
                         ),
@@ -791,14 +791,11 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                   ),
                   if (wide) ...[
                     FilledButton.icon(
-                      onPressed: () => ScaffoldMessenger.of(context)
-                          .showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'New campaign creation is not connected yet.',
-                              ),
-                            ),
-                          ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const RCSCampaignComposerScreen(),
+                        ),
+                      ),
                       icon: const Icon(Icons.add, size: 17),
                       label: const Text('New campaign'),
                       style: FilledButton.styleFrom(
@@ -851,6 +848,7 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                     width: wide ? 185 : 160,
                     child: DropdownButtonFormField<String>(
                       initialValue: _status,
+                      isExpanded: true,
                       decoration: InputDecoration(
                         isDense: true,
                         filled: true,
@@ -878,14 +876,11 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                   _dateField(_dateLabel(_toDate), () => _pickDate(false)),
                   if (!wide) ...[
                     FilledButton.icon(
-                      onPressed: () => ScaffoldMessenger.of(context)
-                          .showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'New campaign creation is not connected yet.',
-                              ),
-                            ),
-                          ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const RCSCampaignComposerScreen(),
+                        ),
+                      ),
                       icon: const Icon(Icons.add, size: 16),
                       label: const Text('New campaign'),
                     ),
@@ -910,8 +905,8 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                       // horizontal scroll view handles the extra width, while
                       // every column keeps enough room for its own contents.
                       width: wide
-                          ? MediaQuery.of(context).size.width - 44
-                          : 540,
+                          ? MediaQuery.of(context).size.width - 26
+                          : 558,
                       child: Column(
                         children: [
                           Container(
@@ -923,11 +918,8 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                             child: Row(
                               children: [
                                 SizedBox(
-                                  width: 30,
+                                  width: 48,
                                   child: Checkbox(
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: VisualDensity.compact,
                                     value:
                                         rows.isNotEmpty &&
                                         rows.every(
@@ -1114,11 +1106,8 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                   child: Row(
                                     children: [
                                       SizedBox(
-                                        width: 30,
+                                        width: 48,
                                         child: Checkbox(
-                                          materialTapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                          visualDensity: VisualDensity.compact,
                                           value: checked,
                                           activeColor: panelAccent(context),
                                           onChanged: (v) => setState(() {
@@ -1517,11 +1506,12 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                               IconButton(
                                                 tooltip:
                                                     'Download campaign report',
-                                                onPressed: () => saveCampaignCsv(
-                                                  context,
-                                                  'rcs',
-                                                  [c],
-                                                ),
+                                                onPressed: () =>
+                                                    saveCampaignCsv(
+                                                      context,
+                                                      'rcs',
+                                                      [c],
+                                                    ),
                                                 icon: const Icon(
                                                   Icons.download_outlined,
                                                   size: 18,
@@ -1562,11 +1552,12 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                                                       minHeight: 34,
                                                     ),
                                                 padding: EdgeInsets.zero,
-                                                onPressed: () => saveCampaignCsv(
-                                                  context,
-                                                  'rcs',
-                                                  [c],
-                                                ),
+                                                onPressed: () =>
+                                                    saveCampaignCsv(
+                                                      context,
+                                                      'rcs',
+                                                      [c],
+                                                    ),
                                                 icon: const Icon(
                                                   Icons.download_outlined,
                                                   size: 17,
@@ -1662,6 +1653,218 @@ class _RCSCampaignsScreenState extends State<RCSCampaignsScreen> {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class RCSNewCampaignScreen extends StatefulWidget {
+  const RCSNewCampaignScreen({super.key});
+
+  @override
+  State<RCSNewCampaignScreen> createState() => _RCSNewCampaignScreenState();
+}
+
+class _RCSNewCampaignScreenState extends State<RCSNewCampaignScreen> {
+  final TextEditingController _campaignName = TextEditingController();
+  final TextEditingController _recipients = TextEditingController();
+  String _template = 'webtech_carousel';
+
+  static const _templates = [
+    'test',
+    'webtech_carousel',
+    'real_webtech',
+    'real',
+    'Botmtjn3dj4',
+    'Botmtjn15tl',
+    'new_webtech_template',
+    'ClaudeFixTest2',
+  ];
+
+  int get _recipientCount => _recipients.text
+      .split(RegExp(r'[,\n]'))
+      .where((recipient) => recipient.trim().isNotEmpty)
+      .toSet()
+      .length;
+
+  bool get _canSubmit =>
+      _campaignName.text.trim().isNotEmpty &&
+      _template.isNotEmpty &&
+      _recipientCount > 0;
+
+  @override
+  void dispose() {
+    _campaignName.dispose();
+    _recipients.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(9),
+      borderSide: const BorderSide(color: Color(0xFFDDE3ED)),
+    );
+    return Scaffold(
+      appBar: buildCpxBoatAppBar(context),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(18),
+          children: [
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back, size: 17),
+              label: const Text('Campaigns'),
+              style: TextButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                foregroundColor: muted,
+              ),
+            ),
+            const Text(
+              'New RCS campaign',
+              style: TextStyle(
+                color: navy,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Choose an approved template and add recipients.',
+              style: TextStyle(color: muted, fontSize: 12),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFDCE5F3)),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Campaign details',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Campaign name',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _campaignName,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Enter campaign name',
+                      filled: true,
+                      fillColor: const Color(0xFFF8F9FC),
+                      border: border,
+                      enabledBorder: border,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'RCS template',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  DropdownButtonFormField<String>(
+                    initialValue: _template,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF8F9FC),
+                      border: border,
+                      enabledBorder: border,
+                    ),
+                    items: _templates
+                        .map(
+                          (template) => DropdownMenuItem(
+                            value: template,
+                            child: Text(template),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (template) {
+                      if (template != null) {
+                        setState(() => _template = template);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Recipients',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _recipients,
+                    minLines: 4,
+                    maxLines: 7,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Enter phone numbers, one per line or comma-separated',
+                      alignLabelWithHint: true,
+                      filled: true,
+                      fillColor: const Color(0xFFF8F9FC),
+                      border: border,
+                      enabledBorder: border,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$_recipientCount recipients',
+                    style: const TextStyle(color: muted, fontSize: 11),
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: _canSubmit
+                        ? () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Campaign details are ready. Connect your RCS sending service to send it.',
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        : null,
+                    icon: const Icon(Icons.send_outlined, size: 17),
+                    label: const Text('Send campaign'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: panelAccent(context),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

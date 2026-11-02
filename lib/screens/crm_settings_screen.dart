@@ -267,7 +267,7 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
                                                   : days.remove(d),
                                             ),
                                             selectedColor: tealColor,
-                                            backgroundColor: Colors.white,
+                                            backgroundColor: premiumSurface,
                                             side: BorderSide(
                                               color: days.contains(d)
                                                   ? tealColor
@@ -391,7 +391,9 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
                                   const SizedBox(width: 8),
                                   smallButton('Add', () {
                                     if (holiday.text.trim().isNotEmpty &&
-                                        !holidays.contains(holiday.text.trim())) {
+                                        !holidays.contains(
+                                          holiday.text.trim(),
+                                        )) {
                                       setState(() {
                                         holidays.add(holiday.text.trim());
                                         holiday.clear();
@@ -750,132 +752,115 @@ class _CRMSettingsScreenState extends State<CRMSettingsScreen> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          ...roles.entries
-                              .map(
-                                (e) => Container(
-                                  decoration: const BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(color: line),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 7,
-                                      horizontal: 2,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                e.key,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: ink,
-                                                ),
-                                              ),
-                                              Text(
-                                                e.value == 'Manager'
-                                                    ? '${e.key == 'Ajay K' ? 'Ajay' : 'dcdcdc'} · ${e.value} in Agent Roles'
-                                                    : '${e.key == 'anu i' ? 'dcdsdc' : 'ajay1'} · ${e.value == 'Sales' ? 'Agent' : 'Manager'} in Agent Roles',
-                                                style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: mutedText,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        SizedBox(
-                                          width: 160,
-                                          child:
-                                              DropdownButtonFormField<String>(
-                                                // Use a guaranteed-valid unique menu key.
-                                                // The displayed role is still Manager/Sales/Viewer.
-                                                initialValue:
-                                                    e.value == 'Manager'
-                                                    ? 'role_manager'
-                                                    : e.value == 'Sales'
-                                                    ? 'role_sales'
-                                                    : e.value == 'Viewer'
-                                                    ? 'role_viewer'
-                                                    : e.value ==
-                                                          'default_manager'
-                                                    ? 'default_manager'
-                                                    : e.value == 'default_sales'
-                                                    ? 'default_sales'
-                                                    : 'role_manager',
-                                                decoration: decoration('Role'),
-                                                items: const [
-                                                  DropdownMenuItem<String>(
-                                                    value: 'default_manager',
-                                                    child: Text(
-                                                      'Default (Manager)',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem<String>(
-                                                    value: 'default_sales',
-                                                    child: Text(
-                                                      'Default (Sales)',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem<String>(
-                                                    value: 'role_manager',
-                                                    child: Text(
-                                                      'Manager',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem<String>(
-                                                    value: 'role_sales',
-                                                    child: Text(
-                                                      'Sales',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem<String>(
-                                                    value: 'role_viewer',
-                                                    child: Text(
-                                                      'Viewer',
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                                onChanged: (v) => setState(() {
-                                                  roles[e.key] = switch (v) {
-                                                    'default_manager' ||
-                                                    'role_manager' => 'Manager',
-                                                    'default_sales' ||
-                                                    'role_sales' => 'Sales',
-                                                    'role_viewer' => 'Viewer',
-                                                    _ => e.value,
-                                                  };
-                                                }),
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                          ...roles.entries.map(
+                            (e) => Container(
+                              decoration: const BoxDecoration(
+                                border: Border(bottom: BorderSide(color: line)),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 7,
+                                  horizontal: 2,
                                 ),
-                              )
-                              ,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            e.key,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: ink,
+                                            ),
+                                          ),
+                                          Text(
+                                            e.value == 'Manager'
+                                                ? '${e.key == 'Ajay K' ? 'Ajay' : 'dcdcdc'} · ${e.value} in Agent Roles'
+                                                : '${e.key == 'anu i' ? 'dcdsdc' : 'ajay1'} · ${e.value == 'Sales' ? 'Agent' : 'Manager'} in Agent Roles',
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              color: mutedText,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: 160,
+                                      child: DropdownButtonFormField<String>(
+                                        // Use a guaranteed-valid unique menu key.
+                                        // The displayed role is still Manager/Sales/Viewer.
+                                        initialValue: e.value == 'Manager'
+                                            ? 'role_manager'
+                                            : e.value == 'Sales'
+                                            ? 'role_sales'
+                                            : e.value == 'Viewer'
+                                            ? 'role_viewer'
+                                            : e.value == 'default_manager'
+                                            ? 'default_manager'
+                                            : e.value == 'default_sales'
+                                            ? 'default_sales'
+                                            : 'role_manager',
+                                        decoration: decoration('Role'),
+                                        items: const [
+                                          DropdownMenuItem<String>(
+                                            value: 'default_manager',
+                                            child: Text(
+                                              'Default (Manager)',
+                                              style: TextStyle(fontSize: 11),
+                                            ),
+                                          ),
+                                          DropdownMenuItem<String>(
+                                            value: 'default_sales',
+                                            child: Text(
+                                              'Default (Sales)',
+                                              style: TextStyle(fontSize: 11),
+                                            ),
+                                          ),
+                                          DropdownMenuItem<String>(
+                                            value: 'role_manager',
+                                            child: Text(
+                                              'Manager',
+                                              style: TextStyle(fontSize: 11),
+                                            ),
+                                          ),
+                                          DropdownMenuItem<String>(
+                                            value: 'role_sales',
+                                            child: Text(
+                                              'Sales',
+                                              style: TextStyle(fontSize: 11),
+                                            ),
+                                          ),
+                                          DropdownMenuItem<String>(
+                                            value: 'role_viewer',
+                                            child: Text(
+                                              'Viewer',
+                                              style: TextStyle(fontSize: 11),
+                                            ),
+                                          ),
+                                        ],
+                                        onChanged: (v) => setState(() {
+                                          roles[e.key] = switch (v) {
+                                            'default_manager' ||
+                                            'role_manager' => 'Manager',
+                                            'default_sales' ||
+                                            'role_sales' => 'Sales',
+                                            'role_viewer' => 'Viewer',
+                                            _ => e.value,
+                                          };
+                                        }),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

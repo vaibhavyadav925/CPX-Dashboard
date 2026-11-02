@@ -166,7 +166,7 @@ class _ManageBillingScreenState extends State<ManageBillingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: pageColor,
       drawer: const DashboardDrawer(currentPage: 'Manage Billings'),
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(

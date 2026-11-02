@@ -48,12 +48,45 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
     final sheetController = TextEditingController();
     final manualController = TextEditingController();
     String mode = 'Excel/CSV';
+    String? selectedFileName;
+    var importedContacts = <Map<String, String>>[];
+
+    Future<void> chooseSpreadsheet(
+      BuildContext dialogContext,
+      StateSetter refreshDialog,
+    ) async {
+      try {
+        final file = await pickSpreadsheetFile();
+        if (file == null) return;
+        final contacts = spreadsheetContactsFromRows(
+          await readSpreadsheetRows(file),
+        );
+        refreshDialog(() {
+          selectedFileName = file.name;
+          importedContacts = contacts;
+        });
+      } on PlatformException catch (error) {
+        if (!dialogContext.mounted) return;
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not open the file picker: ${error.message ?? error.code}',
+            ),
+          ),
+        );
+      } on Exception catch (error) {
+        if (!dialogContext.mounted) return;
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          SnackBar(content: Text('Could not import contacts: $error')),
+        );
+      }
+    }
 
     await showDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, refreshDialog) => Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: premiumSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -153,36 +186,51 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                     ),
                     const SizedBox(height: 12),
                     if (mode == 'Excel/CSV')
-                      Container(
-                        height: 48,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0xFFD9E1ED),
-                            style: BorderStyle.solid,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: const Row(
-                          children: [
-                            Icon(
-                              Icons.upload_file_outlined,
-                              size: 16,
-                              color: Color(0xFF718096),
+                      InkWell(
+                        onTap: () =>
+                            chooseSpreadsheet(dialogContext, refreshDialog),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          height: 48,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: const Color(0xFFD9E1ED),
+                              style: BorderStyle.solid,
                             ),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Upload .xlsx or .csv',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF718096),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.upload_file_outlined,
+                                size: 16,
+                                color: Color(0xFF718096),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  selectedFileName ??
+                                      'Choose .xlsx, .xls, or .csv',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF718096),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            ),
-                          ],
+                              if (importedContacts.isNotEmpty)
+                                Text(
+                                  '${importedContacts.length} contacts',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF718096),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     if (mode == 'Google Sheet')
@@ -224,9 +272,27 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                         ),
                         onPressed: () {
                           final groupName = nameController.text.trim();
-                          if (groupName.isEmpty) return;
-                          final entries = <Map<String, String>>[];
-                          if (mode == 'Manual') {
+                          if (groupName.isEmpty) {
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              const SnackBar(
+                                content: Text('Enter a group name.'),
+                              ),
+                            );
+                            return;
+                          }
+                          final entries = <Map<String, String>>[
+                            if (mode == 'Excel/CSV') ...importedContacts,
+                          ];
+                          if (mode == 'Excel/CSV' && entries.isEmpty) {
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Choose a spreadsheet to import.',
+                                ),
+                              ),
+                            );
+                            return;
+                          } else if (mode == 'Manual') {
                             for (final line in manualController.text.split(
                               RegExp(r'\r?\n'),
                             )) {

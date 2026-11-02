@@ -11,7 +11,7 @@ class WhatsAppChatbotFlowScreen extends StatefulWidget {
 class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
   Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _navy = Color(0xFF17243B);
-  static const Color _muted = Color(0xFF64748B);
+  static const Color _muted = muted;
   static const Color _line = Color(0xFFDCE3EE);
   final TextEditingController _apiKey = TextEditingController();
   final TextEditingController _botName = TextEditingController(
@@ -537,7 +537,7 @@ class _WhatsAppChatbotFlowScreenState extends State<WhatsAppChatbotFlowScreen> {
     return Scaffold(
       drawer: const DashboardDrawer(currentPage: 'Chatbot Flow'),
       appBar: buildCpxBoatAppBar(context),
-      backgroundColor: const Color(0xFFF4F6FA),
+      backgroundColor: pageColor,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(mobile ? 12 : 22),
         child: Column(

@@ -31,7 +31,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
         .substring(2)
         .toUpperCase();
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: pageColor,
       drawer: const DashboardDrawer(currentPage: 'Panel Theme'),
       appBar: buildCpxBoatAppBar(context),
       body: ListView(
@@ -42,7 +42,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
             style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF14213A),
+              color: navy,
             ),
           ),
           const SizedBox(height: 3),
@@ -60,12 +60,12 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF14213A),
+                    color: navy,
                   ),
                 ),
                 const SizedBox(height: 3),
                 const Text(
-                  'Choose a color for the panel header, navigation, buttons, links, and tables. Changes apply immediately.',
+                  'Choose an accent color for the top bar, controls, and highlights. Pages remain white and light.',
                   style: TextStyle(fontSize: 11, color: muted),
                 ),
                 const SizedBox(height: 20),
@@ -102,7 +102,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                     Container(
                       width: 1,
                       height: 28,
-                      color: const Color(0xFFD9DFEA),
+                      color: panelThemeBorder(accent),
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                     ),
                     InkWell(
@@ -223,8 +223,8 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8F9FC),
-                    border: Border.all(color: const Color(0xFFD9DFEA)),
+                    color: panelFieldBackground(accent),
+                    border: Border.all(color: panelThemeBorder(accent)),
                     borderRadius: BorderRadius.circular(7),
                   ),
                   child: const Row(
@@ -234,7 +234,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                       SizedBox(width: 7),
                       Expanded(
                         child: Text(
-                          'Your selected color updates the panel header, navigation, buttons, links, active controls, and table headers immediately. Page backgrounds, text, and status colors remain unchanged.',
+                          'The selected accent softly tints the entire workspace. Text remains high-contrast, while delivery status colors stay consistent.',
                           style: TextStyle(fontSize: 9, color: muted),
                         ),
                       ),
@@ -254,7 +254,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF14213A),
+                    color: navy,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -269,7 +269,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFD9DFEA)),
+                    border: Border.all(color: panelThemeBorder(accent)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -278,7 +278,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5F5F8),
+                          color: accent.withValues(alpha: .14),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -328,8 +328,8 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
                           ),
                           foregroundColor: WidgetStateProperty.resolveWith(
                             (states) => states.contains(WidgetState.selected)
-                                ? Colors.white
-                                : const Color(0xFF14213A),
+                                ? cpxBoatLogoColorForBackground(accent)
+                                : navy,
                           ),
                         ),
                         segments: const [
@@ -369,9 +369,9 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
     width: double.infinity,
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: panelMidBackground(panelAccent(context)),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0xFFD9DFEA)),
+      border: Border.all(color: panelThemeBorder(panelAccent(context))),
       boxShadow: const [
         BoxShadow(
           color: Color(0x0D14213A),
@@ -386,7 +386,7 @@ class _PanelThemeScreenState extends State<PanelThemeScreen> {
   Color _textColorFor(Color color) =>
       ThemeData.estimateBrightnessForColor(color) == Brightness.dark
       ? Colors.white
-      : const Color(0xFF14213A);
+      : brandNavy;
 
   Future<void> _saveAccentColor(Color color) async {
     try {

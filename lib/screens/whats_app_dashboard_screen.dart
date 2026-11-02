@@ -43,14 +43,14 @@ class WhatsAppDashboardScreen extends StatelessWidget {
                 final metrics = <(String, String, String, IconData, Color)>[
                   (
                     'Wallet Balance',
-                    '₹6,278',
+                    '₹0',
                     'Available balance',
                     Icons.account_balance_wallet_outlined,
                     panelAccent(context),
                   ),
                   (
                     'Total Campaigns',
-                    '40',
+                    '0',
                     'All campaigns',
                     Icons.campaign_outlined,
                     const Color(0xFF3989D9),

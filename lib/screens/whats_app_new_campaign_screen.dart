@@ -20,6 +20,7 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
   String _type = '';
   String _template = '';
   String _recipientMode = 'Manual';
+  String? _recipientFileName;
   String _scheduleMode = 'Send now';
   bool _delay = false;
   DateTime? _scheduledDate;
@@ -31,6 +32,35 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
     _recipients.dispose();
     _message.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickRecipientFile() async {
+    try {
+      final file = await pickSpreadsheetFile();
+      if (file == null) return;
+      final numbers = spreadsheetPhoneNumbers(
+        await readSpreadsheetRows(file),
+      );
+      if (!mounted) return;
+      setState(() {
+        _recipients.text = numbers.join('\n');
+        _recipientFileName = file.name;
+      });
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not open the file picker: ${error.message ?? error.code}',
+          ),
+        ),
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not import recipients: $error')),
+      );
+    }
   }
 
   InputDecoration _fieldDecoration(String hint) => InputDecoration(
@@ -410,37 +440,44 @@ class _WhatsAppNewCampaignScreenState extends State<WhatsAppNewCampaignScreen> {
                   style: const TextStyle(fontSize: 11, color: muted),
                 ),
               ] else if (_recipientMode == 'Excel/CSV') ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F9FC),
-                    border: Border.all(color: const Color(0xFFDDE3ED)),
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.upload_file_outlined,
-                        size: 30,
-                        color: panelAccent(context),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Upload Excel or CSV file',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: navy,
+                InkWell(
+                  onTap: _pickRecipientFile,
+                  borderRadius: BorderRadius.circular(9),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F9FC),
+                      border: Border.all(color: const Color(0xFFDDE3ED)),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.upload_file_outlined,
+                          size: 30,
+                          color: panelAccent(context),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'File selection will be available when connected to a file upload service.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 11, color: muted),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          _recipientFileName ?? 'Upload Excel or CSV file',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: navy,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _recipientFileName == null
+                              ? 'Choose a CSV or Excel file with a phone number column.'
+                              : '${_recipientCount()} recipients loaded. Tap to choose another file.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11, color: muted),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ] else ...[

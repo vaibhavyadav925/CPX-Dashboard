@@ -8,11 +8,11 @@ class CRMLeadSourcesScreen extends StatefulWidget {
 }
 
 class _CRMLeadSourcesScreenState extends State<CRMLeadSourcesScreen> {
-  static const Color _ink = Color(0xFF17243B);
-  static const Color _muted = Color(0xFF667892);
+  static const Color _ink = navy;
+  static const Color _muted = muted;
   Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
-  static const Color _canvas = Color(0xFFF4F6FB);
+  Color get _canvas => pageColor;
   int _tab = 0;
   final bool _confirmNewUrl = false;
   final _phone = TextEditingController();

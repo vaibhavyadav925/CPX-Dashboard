@@ -840,7 +840,7 @@ class _SmartFallbackCampaignsScreenState
       barrierDismissible: true,
       barrierColor: Colors.black54,
       builder: (dialogContext) => Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: premiumSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
@@ -1448,6 +1448,7 @@ class _SmartFallbackNewCampaignScreenState
   String _secondChannel = 'WHATSAPP';
   String _thirdChannel = 'None';
   String _numberSource = 'Paste Numbers';
+  String? _recipientFileName;
   String _phonebookGroup = 'Select a contact group';
   String _rcsTemplate = 'Select Template';
   String _whatsappTemplate = 'Select Template';
@@ -1465,6 +1466,34 @@ class _SmartFallbackNewCampaignScreenState
     _nameController.dispose();
     _numbersController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickRecipientFile() async {
+    try {
+      final file = await pickSpreadsheetFile();
+      if (file == null) return;
+      final numbers = spreadsheetPhoneNumbers(await readSpreadsheetRows(file));
+      if (!mounted) return;
+      setState(() {
+        _numbersController.text = numbers.join('\n');
+        _recipientFileName = file.name;
+        _removeDuplicates = false;
+      });
+    } on PlatformException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not open the file picker: ${error.message ?? error.code}',
+          ),
+        ),
+      );
+    } on Exception catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not import recipients: $error')),
+      );
+    }
   }
 
   List<String> get _numbers {
@@ -2044,7 +2073,7 @@ class _SmartFallbackNewCampaignScreenState
             ),
           ),
           InkWell(
-            onTap: () => showApiPendingMessage(context, 'CSV/XLS file upload'),
+            onTap: _pickRecipientFile,
             child: Container(
               width: double.infinity,
               height: 128,
@@ -2056,27 +2085,33 @@ class _SmartFallbackNewCampaignScreenState
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.cloud_upload_outlined,
                     size: 28,
                     color: Color(0xFF69758A),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    'Upload File',
-                    style: TextStyle(
+                    _recipientFileName ?? 'Upload File',
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF7438F5),
                     ),
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text(
-                    'Supported Formats: CSV & XLS',
-                    style: TextStyle(fontSize: 10, color: Color(0xFF68758B)),
+                    _recipientFileName == null
+                        ? 'Supported formats: CSV, XLSX & XLS'
+                        : '${_numbers.length} recipients loaded. Tap to choose another file.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF68758B),
+                    ),
                   ),
                 ],
               ),
@@ -2139,20 +2174,18 @@ class _SmartFallbackNewCampaignScreenState
             style: TextStyle(fontSize: 9, color: Color(0xFF68758B)),
           ),
         ],
-        if (_numberSource != 'Upload File') ...[
-          const SizedBox(height: 7),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              'Total Mobile Numbers: ${_numbers.length}',
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF263247),
-              ),
+        const SizedBox(height: 7),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            'Total Mobile Numbers: ${_numbers.length}',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF263247),
             ),
           ),
-        ],
+        ),
       ],
     ),
   );
@@ -2286,7 +2319,7 @@ class _SmartFallbackNewCampaignScreenState
                               const SizedBox(width: 7),
                               CircleAvatar(
                                 radius: 11,
-                                backgroundColor: Colors.white,
+                                backgroundColor: premiumSurface,
                                 child: Icon(
                                   Icons.business,
                                   size: 12,

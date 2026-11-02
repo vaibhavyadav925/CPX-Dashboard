@@ -8,11 +8,11 @@ class CRMAutomationsScreen extends StatefulWidget {
 }
 
 class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
-  static const Color _ink = Color(0xFF17243B);
-  static const Color _muted = Color(0xFF667892);
+  static const Color _ink = navy;
+  static const Color _muted = muted;
   Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
-  static const Color _canvas = Color(0xFFF4F6FB);
+  Color get _canvas => pageColor;
 
   final List<Map<String, dynamic>> _automations = [
     {
@@ -124,7 +124,7 @@ class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
             }
 
             return Dialog(
-              backgroundColor: Colors.white,
+              backgroundColor: premiumSurface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(13),
               ),

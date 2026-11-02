@@ -11,38 +11,30 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   String company = 'Webtechage-Manager';
   String firstName = '';
   String lastName = '';
-  String email = 'Vaibhav@webtechagel.com';
+  String email = 'Vaibhav@webtechage.com';
   String phone = '6392368875';
   String region = 'India (INR)';
   String country = 'India';
   String stateName = '';
   String gstin = '';
   final Color borderColor = const Color(0xFFD9DFEA);
-  final Color ink = const Color(0xFF14213A);
+  final Color ink = navy;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: pageColor,
       drawer: const DashboardDrawer(currentPage: 'Account Details'),
       appBar: buildCpxBoatAppBar(context),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
         children: [
-          Text(
-            'Account Details',
-            style: TextStyle(
-              fontSize: 19,
-              fontWeight: FontWeight.w800,
-              color: ink,
-            ),
+          const PremiumPageHeader(
+            title: 'Account Details',
+            subtitle: 'Manage your profile and billing information.',
+            icon: Icons.account_circle_outlined,
           ),
-          const SizedBox(height: 3),
-          const Text(
-            'Manage your profile and billing information.',
-            style: TextStyle(fontSize: 12, color: muted),
-          ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 24),
           Text(
             'Profile Details',
             style: TextStyle(

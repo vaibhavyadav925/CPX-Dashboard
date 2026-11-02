@@ -474,7 +474,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       drawer: const DashboardDrawer(currentPage: 'AI Assistant'),
       appBar: buildCpxBoatAppBar(context),
       body: Container(
-        color: pageColor,
+        color: Colors.transparent,
         child: Column(
           children: [
             Padding(

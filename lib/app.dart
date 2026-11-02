@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:file_saver/file_saver.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:excel_plus/excel_plus.dart' as spreadsheet;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -32,6 +34,7 @@ part 'screens/sms_templates_screen.dart';
 part 'screens/sms_new_template_screen.dart';
 part 'screens/rcs_templates_screen.dart';
 part 'screens/rcs_campaigns_screen.dart';
+part 'screens/rcs_new_campaign_composer_screen.dart';
 part 'screens/rcs_reports_screen.dart';
 part 'screens/rcs_chatbot_screen.dart';
 part 'screens/sms_occasions_screen.dart';
@@ -60,6 +63,7 @@ part 'screens/security_screen.dart';
 part 'screens/account_details_screen.dart';
 part 'screens/whats_app_chatbot_flow_screen.dart';
 
+const brandNavy = Color(0xFF10192D);
 const navy = Color(0xFF10192D);
 const defaultPanelAccent = Color(0xFF0B91AD);
 const pageColor = Color(0xFFF5F7FB);
@@ -67,12 +71,334 @@ const muted = Color(0xFF718096);
 const premiumBorder = Color(0xFFE6EBF2);
 const premiumSurface = Color(0xFFFFFFFF);
 
+Color panelDeepBackground(Color accent) => pageColor;
+
+Color panelMidBackground(Color accent) => premiumSurface;
+
+Color panelFieldBackground(Color accent) => const Color(0xFFF8FAFD);
+
+Color panelAccentBorder(Color accent) => premiumBorder;
+
+Color panelTextSecondary(Color accent) => muted;
+
+Color panelThemeBorder(Color accent) => premiumBorder;
+
+Future<PlatformFile?> pickSpreadsheetFile() async {
+  final result = await FilePicker.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: const ['csv', 'xlsx', 'xls'],
+  );
+  if (result.isEmpty) return null;
+  return result.first;
+}
+
+Future<List<List<String>>> readSpreadsheetRows(PlatformFile file) async {
+  final fileSize = await file.length();
+  if (fileSize != null && fileSize > 50 * 1024 * 1024) {
+    throw const FormatException('Files must be smaller than 50 MB.');
+  }
+  return parseSpreadsheetFile(file.name, await file.readAsBytes());
+}
+
+Future<List<List<String>>> parseSpreadsheetFile(
+  String fileName,
+  List<int> bytes,
+) async {
+  final extension = fileName.split('.').last.toLowerCase();
+
+  if (extension == 'csv') {
+    return parseCsvRows(utf8.decode(bytes, allowMalformed: true));
+  }
+  if (extension != 'xlsx' && extension != 'xls') {
+    throw const FormatException('Choose a CSV, XLSX, or XLS file.');
+  }
+
+  final workbook = await spreadsheet.Excel.decodeBytesAsync(bytes);
+  if (workbook.tables.isEmpty) {
+    throw const FormatException(
+      'The spreadsheet does not contain a worksheet.',
+    );
+  }
+  final rows = workbook.tables.values.first.rows
+      .map((row) => row.map((cell) => cell?.value?.toString() ?? '').toList())
+      .where((row) => row.any((cell) => cell.trim().isNotEmpty))
+      .toList();
+  if (rows.isEmpty) {
+    throw const FormatException('The spreadsheet is empty.');
+  }
+  return rows;
+}
+
+List<List<String>> parseCsvRows(String input) {
+  final rows = <List<String>>[];
+  final row = <String>[];
+  final field = StringBuffer();
+  var quoted = false;
+
+  for (var index = 0; index < input.length; index++) {
+    final character = input[index];
+    if (character == '"') {
+      if (quoted && index + 1 < input.length && input[index + 1] == '"') {
+        field.write('"');
+        index++;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (character == ',' && !quoted) {
+      row.add(field.toString());
+      field.clear();
+    } else if ((character == '\n' || character == '\r') && !quoted) {
+      if (character == '\r' &&
+          index + 1 < input.length &&
+          input[index + 1] == '\n') {
+        index++;
+      }
+      row.add(field.toString());
+      field.clear();
+      if (row.any((value) => value.isNotEmpty)) rows.add(List.of(row));
+      row.clear();
+    } else {
+      field.write(character);
+    }
+  }
+
+  if (quoted) throw const FormatException('The CSV has an unclosed quote.');
+  if (field.isNotEmpty || row.isNotEmpty) {
+    row.add(field.toString());
+    if (row.any((value) => value.isNotEmpty)) rows.add(row);
+  }
+  if (rows.isEmpty) throw const FormatException('The file is empty.');
+  return rows;
+}
+
+String _normalizeSpreadsheetHeader(String header) =>
+    header.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+String _canonicalSpreadsheetHeader(String header) {
+  final normalized = _normalizeSpreadsheetHeader(header);
+  if (const {
+    'phone',
+    'phonenumber',
+    'phoneno',
+    'contactnumber',
+    'mobile',
+    'mobilenumber',
+    'mobileno',
+    'recipient',
+    'recipients',
+    'number',
+  }.contains(normalized)) {
+    return 'phone';
+  }
+  if (const {'firstname', 'first'}.contains(normalized)) return 'name';
+  if (const {
+    'countrycode',
+    'countryisdcode',
+    'isdcode',
+    'dialcode',
+  }.contains(normalized)) {
+    return 'countrycode';
+  }
+  return normalized;
+}
+
+List<Map<String, String>> spreadsheetRowsToRecords(List<List<String>> rows) {
+  if (rows.isEmpty) throw const FormatException('The file is empty.');
+  final headers = rows.first.map(_canonicalSpreadsheetHeader).toList();
+  if (headers.every((header) => header.isEmpty)) {
+    throw const FormatException('The file must include a header row.');
+  }
+  return rows
+      .skip(1)
+      .where((row) => row.any((cell) => cell.trim().isNotEmpty))
+      .map(
+        (row) => <String, String>{
+          for (var index = 0; index < headers.length; index++)
+            if (headers[index].isNotEmpty)
+              headers[index]: index < row.length ? row[index].trim() : '',
+        },
+      )
+      .toList();
+}
+
+List<String> spreadsheetPhoneNumbers(
+  List<List<String>> rows, {
+  bool requireCountryCodeAndMsisdn = false,
+}) {
+  if (rows.isEmpty) throw const FormatException('The file is empty.');
+  final headers = rows.first.map(_normalizeSpreadsheetHeader).toList();
+  final countryCodeIndex = headers.indexWhere(
+    (header) => const {
+      'countrycode',
+      'countryisdcode',
+      'isdcode',
+      'dialcode',
+    }.contains(header),
+  );
+  final msisdnIndex = headers.indexOf('msisdn');
+  if (requireCountryCodeAndMsisdn &&
+      (countryCodeIndex < 0 || msisdnIndex < 0)) {
+    throw const FormatException(
+      'The file must include CountryCode and MSISDN columns.',
+    );
+  }
+
+  final phoneIndex = headers.indexWhere(
+    (header) => const {
+      'phone',
+      'phonenumber',
+      'phoneno',
+      'contactnumber',
+      'mobile',
+      'mobilenumber',
+      'mobileno',
+      'recipient',
+      'recipients',
+      'number',
+    }.contains(header),
+  );
+  final resolvedPhoneIndex = phoneIndex >= 0 ? phoneIndex : msisdnIndex;
+  final hasHeader =
+      resolvedPhoneIndex >= 0 || (countryCodeIndex >= 0 && msisdnIndex >= 0);
+  if (!hasHeader && rows.first.length > 1) {
+    throw const FormatException(
+      'Include a phone, mobile, MSISDN, or number column in the file.',
+    );
+  }
+
+  final startIndex = hasHeader ? 1 : 0;
+  final numbers = <String>{};
+  for (final row in rows.skip(startIndex)) {
+    final combineCountryCode =
+        requireCountryCodeAndMsisdn ||
+        resolvedPhoneIndex < 0 ||
+        (countryCodeIndex >= 0 &&
+            msisdnIndex >= 0 &&
+            resolvedPhoneIndex == msisdnIndex);
+    final value = combineCountryCode
+        ? '${countryCodeIndex >= 0 && countryCodeIndex < row.length ? row[countryCodeIndex] : ''}'
+              '${msisdnIndex >= 0 && msisdnIndex < row.length ? row[msisdnIndex] : ''}'
+        : resolvedPhoneIndex < row.length
+        ? row[resolvedPhoneIndex]
+        : '';
+    final number = value.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (number.isNotEmpty) numbers.add(number);
+  }
+  if (numbers.isEmpty) {
+    throw const FormatException('The file does not contain any phone numbers.');
+  }
+  return numbers.toList();
+}
+
+List<Map<String, String>> spreadsheetContactsFromRows(List<List<String>> rows) {
+  final headers = rows.isEmpty
+      ? const <String>[]
+      : rows.first.map(_normalizeSpreadsheetHeader).toList();
+  final hasHeader =
+      headers.any(
+        (header) => const {
+          'phone',
+          'phonenumber',
+          'phoneno',
+          'contactnumber',
+          'mobile',
+          'mobilenumber',
+          'mobileno',
+          'msisdn',
+          'recipient',
+          'recipients',
+          'number',
+        }.contains(header),
+      ) ||
+      (headers.contains('countrycode') && headers.contains('msisdn'));
+  final numbers = spreadsheetPhoneNumbers(rows);
+  if (!hasHeader) {
+    return numbers.map((phone) => {'phone': phone, 'name': ''}).toList();
+  }
+
+  final records = spreadsheetRowsToRecords(rows);
+  final uniqueContacts = <String, Map<String, String>>{};
+  for (final record in records) {
+    final phone = (record['phone'] ?? '').isNotEmpty
+        ? record['phone']!
+        : '${record['countrycode'] ?? ''}${record['msisdn'] ?? ''}';
+    final normalizedPhone = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (normalizedPhone.isNotEmpty) {
+      uniqueContacts.putIfAbsent(
+        normalizedPhone,
+        () => {'phone': normalizedPhone, 'name': record['name'] ?? ''},
+      );
+    }
+  }
+  if (uniqueContacts.isEmpty) {
+    throw const FormatException('The file does not contain any phone numbers.');
+  }
+  return uniqueContacts.values.toList();
+}
+
+List<Map<String, String>> parseCrmLeadsRows(List<List<String>> rows) {
+  if (rows.isEmpty) throw const FormatException('The file is empty.');
+  final headers = rows.first.map(_canonicalSpreadsheetHeader).toList();
+  if (!headers.contains('phone') && !headers.contains('msisdn')) {
+    throw const FormatException('The file must include a phone column.');
+  }
+  return spreadsheetRowsToRecords(rows).map((record) {
+    if (record.containsKey('phone')) return record;
+    return {...record, 'phone': record['msisdn'] ?? ''};
+  }).toList();
+}
+
+List<Map<String, String>> parseCrmLeadsCsv(String input) =>
+    parseCrmLeadsRows(parseCsvRows(input));
+
+const dashboardReportRowsByChannel = <String, List<List<String>>>{
+  'RCS': [
+    ['ajay', '—', '13 Oct 2026', '—', '22', '22', '0', '0', '0', '0'],
+    ['ajay', '—', '12 Oct 2026', '—', '1', '0', '0', '0', '1', '0'],
+    ['ajay', '—', '05 Oct 2026', '—', '1', '0', '1', '0', '0', '0'],
+  ],
+  'Whatsapp': [
+    [
+      'ajay',
+      '—',
+      '13 Oct 2026',
+      'Promotional',
+      '18',
+      '18',
+      '16',
+      '12',
+      '2',
+      '4',
+    ],
+    ['ajay', '—', '11 Oct 2026', 'Utility', '6', '6', '5', '4', '1', '2'],
+  ],
+  'SMS': [
+    ['ajay', '—', '13 Oct 2026', 'OTP', '24', '24', '23', '0', '1', '0'],
+    [
+      'ajay',
+      '—',
+      '09 Oct 2026',
+      'Promotional',
+      '12',
+      '12',
+      '11',
+      '0',
+      '1',
+      '0',
+    ],
+  ],
+  'Fallback': [],
+};
+
 Color panelAccent(BuildContext context) =>
     Theme.of(context).colorScheme.primary;
 
+Color panelAccentStrong(BuildContext context) =>
+    Color.lerp(panelAccent(context), brandNavy, .22)!;
+
 Color cpxBoatLogoColorForBackground(Color backgroundColor) =>
     ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.light
-    ? navy
+    ? brandNavy
     : Colors.white;
 
 List<double> cpxBoatLogoColorMatrix(Color accent) {
@@ -323,7 +649,7 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
       builder: (context, _) {
         final accent = PanelThemeController.instance.accentColor;
         return MaterialApp(
-          // title: 'CPXBOAT Dashboard',
+          title: 'CPXBOAT Dashboard',
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             useMaterial3: true,
@@ -331,102 +657,114 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
             colorScheme: ColorScheme.fromSeed(
               seedColor: accent,
               brightness: Brightness.light,
-              surface: Colors.white,
+              surface: premiumSurface,
             ).copyWith(primary: accent),
+            textSelectionTheme: TextSelectionThemeData(
+              cursorColor: accent,
+              selectionColor: accent.withValues(alpha: .2),
+              selectionHandleColor: accent,
+            ),
             fontFamily: 'Roboto',
             visualDensity: VisualDensity.standard,
             primaryColor: accent,
+            splashFactory: InkSparkle.splashFactory,
             appBarTheme: AppBarTheme(
               backgroundColor: accent,
-              foregroundColor: Colors.white,
+              foregroundColor: cpxBoatLogoColorForBackground(accent),
+              surfaceTintColor: Colors.transparent,
               elevation: 0,
               centerTitle: false,
+              scrolledUnderElevation: 0,
               titleTextStyle: TextStyle(
-                color: Colors.white,
+                color: cpxBoatLogoColorForBackground(accent),
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                letterSpacing: .2,
+                letterSpacing: -.2,
               ),
-              iconTheme: IconThemeData(color: Colors.white, size: 23),
+              iconTheme: IconThemeData(
+                color: cpxBoatLogoColorForBackground(accent),
+                size: 23,
+              ),
             ),
-            textTheme: const TextTheme(
+            textTheme: TextTheme(
               headlineLarge: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 color: navy,
+                letterSpacing: -.8,
                 height: 1.2,
               ),
               headlineMedium: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: navy,
+                letterSpacing: -.6,
                 height: 1.2,
               ),
               headlineSmall: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
                 color: navy,
+                letterSpacing: -.4,
                 height: 1.25,
               ),
               titleLarge: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: navy,
+                letterSpacing: -.2,
               ),
               titleMedium: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: navy,
               ),
-              bodyLarge: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF253047),
-                height: 1.45,
-              ),
+              bodyLarge: TextStyle(fontSize: 14, color: navy, height: 1.45),
               bodyMedium: TextStyle(
                 fontSize: 13,
-                color: Color(0xFF4F5D73),
+                color: panelTextSecondary(accent),
                 height: 1.4,
               ),
               bodySmall: TextStyle(fontSize: 12, color: muted, height: 1.35),
               labelLarge: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             ),
             cardTheme: CardThemeData(
-              color: Colors.white,
+              color: premiumSurface,
               surfaceTintColor: Colors.transparent,
-              elevation: 0,
-              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+              elevation: 1,
+              shadowColor: const Color(0x44000000),
+              margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: premiumBorder),
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(color: panelThemeBorder(accent)),
               ),
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
-              fillColor: const Color(0xFFF8FAFD),
+              fillColor: panelFieldBackground(accent),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 14,
                 vertical: 13,
               ),
-              hintStyle: const TextStyle(
-                color: Color(0xFF98A3B5),
+              hintStyle: TextStyle(
+                color: panelTextSecondary(accent),
                 fontSize: 13,
               ),
-              labelStyle: const TextStyle(
-                color: Color(0xFF526078),
+              labelStyle: TextStyle(
+                color: panelTextSecondary(accent),
                 fontSize: 13,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFDCE3EE)),
+                borderRadius: BorderRadius.circular(13),
+                borderSide: BorderSide(color: panelThemeBorder(accent)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFDCE3EE)),
+                borderRadius: BorderRadius.circular(13),
+                borderSide: BorderSide(color: panelThemeBorder(accent)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: accent, width: 1.6),
+                borderRadius: BorderRadius.circular(13),
+                borderSide: BorderSide(color: accent, width: 1.7),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -436,9 +774,28 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 backgroundColor: accent,
-                foregroundColor: Colors.white,
+                foregroundColor: cpxBoatLogoColorForBackground(accent),
                 elevation: 0,
-                minimumSize: const Size(46, 44),
+                minimumSize: const Size(48, 48),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            filledButtonTheme: FilledButtonThemeData(
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                foregroundColor: cpxBoatLogoColorForBackground(accent),
+                elevation: 0,
+                minimumSize: const Size(48, 48),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,
                   vertical: 12,
@@ -455,7 +812,7 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
             outlinedButtonTheme: OutlinedButtonThemeData(
               style: OutlinedButton.styleFrom(
                 foregroundColor: navy,
-                minimumSize: const Size(42, 40),
+                minimumSize: const Size(48, 44),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
                   vertical: 10,
@@ -464,7 +821,7 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
-                side: const BorderSide(color: Color(0xFFD9E1EC)),
+                side: BorderSide(color: panelThemeBorder(accent)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -482,10 +839,281 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
                 ),
               ),
             ),
+            iconButtonTheme: IconButtonThemeData(
+              style: IconButton.styleFrom(
+                foregroundColor: panelTextSecondary(accent),
+                minimumSize: const Size(48, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(11),
+                ),
+              ),
+            ),
+            chipTheme: ChipThemeData(
+              backgroundColor: panelFieldBackground(accent),
+              selectedColor: accent.withValues(alpha: .12),
+              secondarySelectedColor: accent.withValues(alpha: .12),
+              disabledColor: pageColor,
+              surfaceTintColor: Colors.transparent,
+              side: const BorderSide(color: premiumBorder),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              labelStyle: const TextStyle(
+                color: Color(0xFF475569),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              secondaryLabelStyle: TextStyle(
+                color: accent,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            dropdownMenuTheme: DropdownMenuThemeData(
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: premiumSurface,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 13,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide(color: panelThemeBorder(accent)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide(color: panelThemeBorder(accent)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(13),
+                  borderSide: BorderSide(color: accent, width: 1.6),
+                ),
+              ),
+              menuStyle: MenuStyle(
+                backgroundColor: WidgetStatePropertyAll(premiumSurface),
+                elevation: const WidgetStatePropertyAll(8),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(color: panelThemeBorder(accent)),
+                  ),
+                ),
+              ),
+            ),
+            popupMenuTheme: PopupMenuThemeData(
+              color: premiumSurface,
+              surfaceTintColor: Colors.transparent,
+              elevation: 8,
+              shadowColor: const Color(0x44000000),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: panelThemeBorder(accent)),
+              ),
+              textStyle: TextStyle(
+                color: navy,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            searchBarTheme: SearchBarThemeData(
+              backgroundColor: WidgetStatePropertyAll(premiumSurface),
+              surfaceTintColor: const WidgetStatePropertyAll(
+                Colors.transparent,
+              ),
+              shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+              elevation: const WidgetStatePropertyAll(0),
+              padding: const WidgetStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: 14),
+              ),
+              side: WidgetStateProperty.resolveWith(
+                (states) => BorderSide(color: panelThemeBorder(accent)),
+              ),
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
+              ),
+              textStyle: const WidgetStatePropertyAll(
+                TextStyle(color: navy, fontSize: 13),
+              ),
+              hintStyle: const WidgetStatePropertyAll(
+                TextStyle(color: muted, fontSize: 13),
+              ),
+            ),
+            segmentedButtonTheme: SegmentedButtonThemeData(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  return states.contains(WidgetState.selected)
+                      ? accent.withValues(alpha: .12)
+                      : premiumSurface;
+                }),
+                foregroundColor: WidgetStateProperty.resolveWith((states) {
+                  return states.contains(WidgetState.selected) ? accent : navy;
+                }),
+                side: WidgetStateProperty.resolveWith((states) {
+                  return BorderSide(
+                    color: states.contains(WidgetState.selected)
+                        ? accent.withValues(alpha: .45)
+                        : panelThemeBorder(accent),
+                  );
+                }),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                ),
+                textStyle: const WidgetStatePropertyAll(
+                  TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+            tabBarTheme: TabBarThemeData(
+              labelColor: navy,
+              unselectedLabelColor: muted,
+              indicatorColor: accent,
+              indicatorSize: TabBarIndicatorSize.label,
+              dividerColor: panelThemeBorder(accent),
+              labelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            dataTableTheme: DataTableThemeData(
+              headingRowColor: WidgetStatePropertyAll(
+                panelFieldBackground(accent),
+              ),
+              headingTextStyle: TextStyle(
+                color: panelTextSecondary(accent),
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+              dataTextStyle: TextStyle(color: navy, fontSize: 12),
+              dividerThickness: 1,
+              horizontalMargin: 16,
+              columnSpacing: 22,
+            ),
+            checkboxTheme: CheckboxThemeData(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              side: BorderSide(color: panelAccentBorder(accent)),
+              fillColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? accent
+                    : Colors.transparent,
+              ),
+            ),
+            radioTheme: RadioThemeData(
+              fillColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? accent
+                    : panelTextSecondary(accent),
+              ),
+            ),
+            switchTheme: SwitchThemeData(
+              thumbColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? panelMidBackground(accent)
+                    : pageColor,
+              ),
+              trackColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? accent
+                    : panelThemeBorder(accent),
+              ),
+              trackOutlineColor: const WidgetStatePropertyAll(
+                Colors.transparent,
+              ),
+            ),
+            listTileTheme: ListTileThemeData(
+              iconColor: panelTextSecondary(accent),
+              textColor: navy,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: premiumSurface,
+              surfaceTintColor: Colors.transparent,
+              elevation: 12,
+              shadowColor: const Color(0x2410192D),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: panelThemeBorder(accent)),
+              ),
+              titleTextStyle: const TextStyle(
+                color: navy,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -.2,
+              ),
+              contentTextStyle: TextStyle(
+                color: panelTextSecondary(accent),
+                fontSize: 13,
+                height: 1.45,
+              ),
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: premiumSurface,
+              surfaceTintColor: Colors.transparent,
+              headerBackgroundColor: panelDeepBackground(accent),
+              headerForegroundColor: Colors.white,
+              dividerColor: panelThemeBorder(accent),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              weekdayStyle: const TextStyle(
+                color: muted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+              dayStyle: const TextStyle(
+                color: navy,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              todayBorder: BorderSide(color: accent),
+            ),
+            snackBarTheme: SnackBarThemeData(
+              backgroundColor: panelDeepBackground(accent),
+              contentTextStyle: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(13),
+              ),
+              insetPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            ),
+            bottomSheetTheme: BottomSheetThemeData(
+              backgroundColor: premiumSurface,
+              surfaceTintColor: Colors.transparent,
+              showDragHandle: true,
+              dragHandleColor: panelAccentBorder(accent),
+              dragHandleSize: Size(36, 4),
+            ),
+            tooltipTheme: TooltipThemeData(
+              decoration: BoxDecoration(
+                color: panelDeepBackground(accent),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              textStyle: const TextStyle(color: Colors.white, fontSize: 11),
+              waitDuration: const Duration(milliseconds: 450),
+            ),
             dividerTheme: const DividerThemeData(
               color: Color(0xFFE5EAF2),
               thickness: 1,
               space: 1,
+            ),
+            progressIndicatorTheme: ProgressIndicatorThemeData(
+              color: accent,
+              linearTrackColor: accent.withValues(alpha: .12),
+              circularTrackColor: accent.withValues(alpha: .12),
             ),
           ),
           home: const AuthEntryScreen(),
@@ -498,6 +1126,12 @@ class _CPXBoatAppState extends State<CPXBoatApp> {
 PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
   final screenWidth = MediaQuery.sizeOf(context).width;
   final compact = screenWidth < 600;
+  final accent = panelAccent(context);
+  final topBarForeground = cpxBoatLogoColorForBackground(accent);
+  final topBarEnd = Color.lerp(accent, brandNavy, .22)!;
+  final logoTint = topBarForeground == Colors.white
+      ? Color.lerp(accent, Colors.white, .5)!
+      : Color.lerp(accent, brandNavy, .35)!;
   final toolbarHeight = screenWidth < 600
       ? 56.0
       : screenWidth < 900
@@ -506,12 +1140,23 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
 
   return AppBar(
     toolbarHeight: toolbarHeight,
-    backgroundColor: panelAccent(context),
-    foregroundColor: Colors.white,
+    backgroundColor: accent,
+    foregroundColor: topBarForeground,
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     scrolledUnderElevation: 0,
-    shadowColor: Colors.black26,
+    flexibleSpace: DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [accent, topBarEnd],
+        ),
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: .14)),
+        ),
+      ),
+    ),
     leadingWidth: compact ? 42 : 46,
     titleSpacing: 0,
     leading: Builder(
@@ -520,7 +1165,11 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
         constraints: const BoxConstraints(minWidth: 40, minHeight: 44),
         padding: const EdgeInsets.symmetric(horizontal: 8),
         visualDensity: VisualDensity.compact,
-        icon: Icon(Icons.menu_rounded, size: compact ? 22 : 22),
+        icon: Icon(
+          Icons.menu_rounded,
+          size: compact ? 22 : 22,
+          color: topBarForeground,
+        ),
         onPressed: () {
           final scaffold = Scaffold.maybeOf(context);
           if (scaffold != null && scaffold.hasDrawer) {
@@ -533,9 +1182,7 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
       mainAxisSize: MainAxisSize.min,
       children: [
         ColorFiltered(
-          colorFilter: ColorFilter.matrix(
-            cpxBoatTopBarLogoColorMatrix(panelAccent(context)),
-          ),
+          colorFilter: ColorFilter.matrix(cpxBoatLogoColorMatrix(logoTint)),
           child: Image.asset(
             'assets/logo.png',
             width: 135,
@@ -558,14 +1205,18 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
           margin: EdgeInsets.symmetric(vertical: (toolbarHeight - 32) / 2),
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .10),
-            border: Border.all(color: Colors.white.withValues(alpha: .24)),
+            color: Colors.white.withValues(alpha: .13),
+            border: Border.all(color: Colors.white.withValues(alpha: .3)),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.account_balance_wallet_outlined, size: 15),
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 15,
+                color: topBarForeground,
+              ),
               const SizedBox(width: 5),
               const Text(
                 '10',
@@ -589,17 +1240,273 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
         constraints: const BoxConstraints(minWidth: 36, minHeight: 40),
         padding: const EdgeInsets.all(5),
         visualDensity: VisualDensity.compact,
-        icon: const Icon(
-          Icons.account_circle_outlined,
-          size: 21,
-          color: Colors.white,
-        ),
+        icon: const Icon(Icons.account_circle_outlined, size: 21),
       ),
       Padding(
         padding: const EdgeInsets.only(left: 1, right: 12),
-        child: const Icon(Icons.notifications_none_rounded, size: 22),
+        child: Icon(
+          Icons.notifications_none_rounded,
+          size: 22,
+          color: topBarForeground,
+        ),
       ),
     ],
+  );
+}
+
+class PremiumPageHeader extends StatelessWidget {
+  const PremiumPageHeader({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.eyebrow,
+    this.icon,
+    this.action,
+  });
+
+  final String title;
+  final String subtitle;
+  final String? eyebrow;
+  final IconData? icon;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final titleBlock = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (icon != null) ...[
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: panelAccent(context).withValues(alpha: .1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: panelAccentStrong(context), size: 22),
+          ),
+          const SizedBox(width: 14),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (eyebrow != null) ...[
+                Text(
+                  eyebrow!.toUpperCase(),
+                  style: TextStyle(
+                    color: panelAccentStrong(context),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                title,
+                style: Theme.of(context).textTheme.headlineMedium
+                    ?.copyWith(fontSize: 26, letterSpacing: -.55),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: muted),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (action == null) return titleBlock;
+        if (constraints.maxWidth < 620) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              titleBlock,
+              const SizedBox(height: 12),
+              Align(alignment: Alignment.centerLeft, child: action!),
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(child: titleBlock),
+            const SizedBox(width: 20),
+            action!,
+          ],
+        );
+      },
+    );
+  }
+}
+
+class PremiumEmptyState extends StatelessWidget {
+  const PremiumEmptyState({
+    super.key,
+    required this.title,
+    required this.message,
+    this.icon = Icons.inbox_outlined,
+    this.action,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+  final Widget? action;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+    decoration: BoxDecoration(
+      color: premiumSurface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: premiumBorder),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                panelAccent(context).withValues(alpha: .24),
+                panelAccent(context).withValues(alpha: .08),
+              ],
+            ),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: panelAccent(context).withValues(alpha: .12),
+            ),
+          ),
+          child: Icon(icon, color: panelAccentStrong(context), size: 22),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: navy,
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 5),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: panelTextSecondary(panelAccent(context)),
+              fontSize: 12,
+              height: 1.45,
+            ),
+          ),
+        ),
+        if (action != null) ...[const SizedBox(height: 14), action!],
+      ],
+    ),
+  );
+}
+
+class PremiumLoadingState extends StatelessWidget {
+  const PremiumLoadingState({super.key, required this.message, this.rows = 3})
+    : assert(rows > 0);
+
+  final String message;
+  final int rows;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    label: message,
+    child: ExcludeSemantics(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var index = 0; index < rows; index++) ...[
+            if (index > 0) const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: _cardDecoration(radius: 14),
+              child: Row(
+                children: [
+                  _loadingBlock(width: 34, height: 34, radius: 11),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: index == 0 ? .7 : .56,
+                          child: _loadingBlock(
+                            width: 150,
+                            height: 12,
+                            radius: 6,
+                          ),
+                        ),
+                        const SizedBox(height: 9),
+                        const FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: .9,
+                          child: _LoadingPlaceholder(
+                            width: 190,
+                            height: 9,
+                            radius: 5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _loadingBlock(width: 56, height: 24, radius: 12),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
+
+  Widget _loadingBlock({
+    required double width,
+    required double height,
+    required double radius,
+  }) => _LoadingPlaceholder(width: width, height: height, radius: radius);
+}
+
+class _LoadingPlaceholder extends StatelessWidget {
+  const _LoadingPlaceholder({
+    required this.width,
+    required this.height,
+    required this.radius,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: width,
+    height: height,
+    decoration: BoxDecoration(
+      color: panelAccent(context).withValues(alpha: .18),
+      borderRadius: BorderRadius.circular(radius),
+    ),
   );
 }
 
@@ -607,6 +1514,8 @@ class StatCard extends StatelessWidget {
   final String label;
 
   final int value;
+
+  final String? detail;
 
   final Color color;
 
@@ -619,6 +1528,8 @@ class StatCard extends StatelessWidget {
 
     required this.value,
 
+    this.detail,
+
     required this.color,
 
     required this.icon,
@@ -627,78 +1538,83 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: premiumSurface,
-
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: premiumBorder),
+        color: panelMidBackground(panelAccent(context)),
+        borderRadius: BorderRadius.circular(17),
+        border: Border.all(color: panelThemeBorder(panelAccent(context))),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0810192D),
-            blurRadius: 14,
-            offset: Offset(0, 4),
+            color: Color(0x0910192D),
+            blurRadius: 18,
+            offset: Offset(0, 6),
           ),
         ],
       ),
-
-      child: Row(
+      child: Stack(
         children: [
-          Expanded(
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(height: 3, color: color),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 15, 15, 13),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
-              mainAxisAlignment: MainAxisAlignment.center,
-
               children: [
-                Text(
-                  label,
-
-                  maxLines: 1,
-
-                  style: const TextStyle(
-                    fontSize: 11,
-
-                    color: muted,
-
-                    fontWeight: FontWeight.w700,
-
-                    letterSpacing: .2,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: muted,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: .8,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: .1),
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: Icon(icon, color: color, size: 18),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 6),
-
+                const Spacer(),
                 Text(
                   '$value',
-
                   style: const TextStyle(
-                    fontSize: 23,
-
-                    height: 1.05,
-
+                    fontSize: 29,
+                    height: 1,
                     fontWeight: FontWeight.w800,
-
                     color: navy,
+                    letterSpacing: -.8,
                   ),
                 ),
+                const SizedBox(height: 7),
+                if (detail != null)
+                  Text(
+                    detail!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: muted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
               ],
             ),
-          ),
-
-          Container(
-            width: 34,
-
-            height: 34,
-
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: .13),
-
-              borderRadius: BorderRadius.circular(10),
-            ),
-
-            child: Icon(icon, color: color, size: 19),
           ),
         ],
       ),
@@ -891,7 +1807,7 @@ class _CampaignReportSidePanel extends StatelessWidget {
         : campaign.date;
 
     return Material(
-      color: const Color(0xFFF8FBFC),
+      color: panelDeepBackground(panelAccent(context)),
       child: Column(
         children: [
           Container(
@@ -905,8 +1821,8 @@ class _CampaignReportSidePanel extends StatelessWidget {
                     Container(
                       width: 42,
                       height: 42,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: premiumSurface,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -954,7 +1870,7 @@ class _CampaignReportSidePanel extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: premiumSurface,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -986,7 +1902,7 @@ class _CampaignReportSidePanel extends StatelessWidget {
                     horizontal: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: premiumSurface,
                     border: Border.all(color: const Color(0xFFDDE5EF)),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: const [
@@ -1086,7 +2002,7 @@ class _CampaignReportSidePanel extends StatelessWidget {
                 const SizedBox(height: 14),
                 const Divider(color: Color(0xFFD8E1ED)),
                 const SizedBox(height: 5),
-                const Row(
+                Row(
                   children: [
                     Expanded(
                       child: Text(
@@ -1256,7 +2172,7 @@ class _CampaignProgressRow extends StatelessWidget {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF3DB),
+                    color: Color(0xFFFFF3DB),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -1374,7 +2290,7 @@ class _CampaignReportDialog extends StatelessWidget {
     ];
 
     return Material(
-      color: Colors.white,
+      color: premiumSurface,
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
@@ -1834,7 +2750,7 @@ class WhatsAppCampaignReportDetail extends StatelessWidget {
       ],
     ];
     return Scaffold(
-      backgroundColor: pageColor,
+      backgroundColor: Colors.transparent,
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(
@@ -2766,6 +3682,9 @@ class DashboardDrawer extends StatefulWidget {
 }
 
 class _DashboardDrawerState extends State<DashboardDrawer> {
+  final TextEditingController _navigationSearch = TextEditingController();
+  String _navigationQuery = '';
+
   final Map<String, bool> expanded = {
     'Dashboard': true,
 
@@ -2798,6 +3717,12 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
     if (currentGroup != null && expanded.containsKey(currentGroup)) {
       expanded[currentGroup] = true;
     }
+  }
+
+  @override
+  void dispose() {
+    _navigationSearch.dispose();
+    super.dispose();
   }
 
   String? _groupForPage(String page) {
@@ -2843,26 +3768,20 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
       width: MediaQuery.sizeOf(context).width < 340
           ? MediaQuery.sizeOf(context).width - 20
           : 292,
-
       backgroundColor: Colors.transparent,
-
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
-
             end: Alignment.bottomRight,
-
             colors: [
-              Color.lerp(panelAccent(context), Colors.black, .42)!,
-              Color.lerp(panelAccent(context), Colors.black, .24)!,
-              Color.lerp(panelAccent(context), Colors.black, .08)!,
+              Color.lerp(panelAccent(context), Colors.black, .82)!,
+              Color.lerp(panelAccent(context), Colors.black, .72)!,
+              Color.lerp(panelAccent(context), Colors.black, .62)!,
             ],
-
-            stops: [0.0, 0.58, 1.0],
+            stops: const [0, .58, 1],
           ),
         ),
-
         child: SafeArea(
           child: Column(
             children: [
@@ -2887,7 +3806,7 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(
                         Icons.close_rounded,
-                        color: Colors.white54,
+                        color: Color(0xFFB5BED0),
                         size: 20,
                       ),
                     ),
@@ -2902,7 +3821,7 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
                   child: Text(
                     'MESSAGING WORKSPACE',
                     style: TextStyle(
-                      color: Color(0xFF8491AA),
+                      color: Color(0xFF8791A6),
                       fontSize: 9,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.25,
@@ -2912,11 +3831,86 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
               ),
               const Divider(height: 1, color: Color(0xFF29334A)),
 
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                child: TextField(
+                  key: const ValueKey('drawer-navigation-search'),
+                  controller: _navigationSearch,
+                  onChanged: (value) =>
+                      setState(() => _navigationQuery = value.trim()),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Search pages',
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF9AA5BA),
+                      fontSize: 12,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF9AA5BA),
+                      size: 19,
+                    ),
+                    suffixIcon: _navigationQuery.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Clear page search',
+                            onPressed: () {
+                              _navigationSearch.clear();
+                              setState(() => _navigationQuery = '');
+                            },
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Color(0xFF9AA5BA),
+                              size: 18,
+                            ),
+                          ),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: .08),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: .12),
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: .12),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: panelAccent(context).withValues(alpha: .8),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(10, 12, 10, 16),
 
                   children: [
+                    if (_navigationQuery.isNotEmpty &&
+                        !_hasNavigationMatch(_navigationQuery))
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 18,
+                        ),
+                        child: Text(
+                          'No matching pages. Try a different search.',
+                          style: TextStyle(
+                            color: Color(0xFFB5BED0),
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
                     _navGroup(
                       title: 'Dashboard',
 
@@ -3120,6 +4114,64 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
     );
   }
 
+  bool _hasNavigationMatch(String query) {
+    final normalized = query.toLowerCase();
+    return const {
+      'Dashboard': ['Smart Home', 'MIS Reports'],
+      'WhatsApp-App': [
+        'Dashboard',
+        'Inbox',
+        'Campaigns',
+        'Templates',
+        'Chatbot Flow',
+        'Flows',
+        'Commerce',
+        'Occasions',
+        'Reports',
+        'Scheduled',
+        'Business Profile',
+        'Quick Links',
+        'Tier Limit',
+      ],
+      'RCS-App': [
+        'Dashboard',
+        'Inbox',
+        'Campaigns',
+        'Templates',
+        'Chatbot',
+        'Occasions',
+        'Reports',
+        'Scheduled',
+      ],
+      'SMS-App': [
+        'Dashboard',
+        'Campaigns',
+        'Templates',
+        'Sender IDs',
+        'Occasions',
+        'Reports',
+        'Scheduled',
+      ],
+      'Smart Fallback': ['Dashboard', 'Campaigns', 'Occasions', 'Reports'],
+      'CRM & Automation': [
+        'Overview',
+        'Leads',
+        'Automations',
+        'Lead Sources',
+        'CRM Settings',
+      ],
+      'AI Assistant': ['AI Assistant'],
+      'Groups & Roles': ['Contact Groups', 'Agent Roles'],
+      'Manage Billings': ['Manage Billings'],
+      'Connectivity': ['Channels Info', 'Onboard Channels'],
+      'Manage Settings': ['Account Details', 'Security', 'Panel Theme'],
+    }.entries.any(
+      (entry) =>
+          entry.key.toLowerCase().contains(normalized) ||
+          entry.value.any((page) => page.toLowerCase().contains(normalized)),
+    );
+  }
+
   Widget _navGroup({
     required String title,
 
@@ -3129,39 +4181,65 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
 
     bool isSingle = false,
   }) {
-    final isExpanded = expanded[title] ?? false;
-
     final hasChildren = children.isNotEmpty;
+    final query = _navigationQuery.toLowerCase();
+    final titleMatches =
+        query.isNotEmpty && title.toLowerCase().contains(query);
+    final visibleChildren = query.isEmpty || titleMatches
+        ? children
+        : children.where((item) => item.toLowerCase().contains(query)).toList();
+    final groupMatches =
+        query.isEmpty || titleMatches || visibleChildren.isNotEmpty;
+    if (!groupMatches) return const SizedBox.shrink();
+
+    final isExpanded = query.isNotEmpty
+        ? hasChildren
+        : expanded[title] ?? false;
     final isActive = isSingle && selectedItem == title;
+    final isCurrentGroup =
+        widget.currentGroup == title ||
+        (widget.currentGroup == null && _groupForPage(selectedItem) == title);
 
     return Column(
       children: [
-        InkWell(
-          borderRadius: BorderRadius.circular(10),
-
-          onTap: () {
-            if (isSingle) {
-              _select(title);
-            } else {
-              setState(() => expanded[title] = !isExpanded);
-            }
-          },
-
-          child: Container(
-            decoration: isActive
-                ? BoxDecoration(
-                    color: panelAccent(context),
-                    borderRadius: BorderRadius.circular(10),
-                  )
-                : null,
-            child: Padding(
+        Semantics(
+          selected: isActive || isCurrentGroup,
+          expanded: hasChildren ? isExpanded : null,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              if (isSingle) {
+                _select(title);
+              } else {
+                setState(() => expanded[title] = !isExpanded);
+              }
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              decoration: isActive
+                  ? BoxDecoration(
+                      color: panelAccent(context),
+                      borderRadius: BorderRadius.circular(11),
+                    )
+                  : isCurrentGroup
+                  ? BoxDecoration(
+                      color: Colors.white.withValues(alpha: .08),
+                      borderRadius: BorderRadius.circular(11),
+                    )
+                  : isExpanded
+                  ? BoxDecoration(
+                      color: Colors.white.withValues(alpha: .06),
+                      borderRadius: BorderRadius.circular(11),
+                    )
+                  : null,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
               child: Row(
                 children: [
                   Icon(
                     icon,
                     size: 19,
-                    color: isExpanded || isActive
+                    color: isExpanded || isActive || isCurrentGroup
                         ? Colors.white
                         : const Color(0xFFB5BED0),
                   ),
@@ -3170,11 +4248,11 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
                     child: Text(
                       title,
                       style: TextStyle(
-                        color: isExpanded || isActive
+                        color: isExpanded || isActive || isCurrentGroup
                             ? Colors.white
                             : const Color(0xFFD8DEEA),
                         fontSize: 12,
-                        fontWeight: isExpanded || isActive
+                        fontWeight: isExpanded || isActive || isCurrentGroup
                             ? FontWeight.w700
                             : FontWeight.w500,
                       ),
@@ -3193,28 +4271,21 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
             ),
           ),
         ),
-
         if (hasChildren && isExpanded)
-          ...children.map((item) {
+          ...visibleChildren.map((item) {
             final isLabel = item == 'INSIGHTS' || item == 'NEW FEATURES';
 
             if (isLabel) {
               return Padding(
                 padding: const EdgeInsets.fromLTRB(27, 10, 8, 6),
-
                 child: Align(
                   alignment: Alignment.centerLeft,
-
                   child: Text(
                     item,
-
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF7D8AA4),
-
                       fontSize: 10,
-
                       fontWeight: FontWeight.w800,
-
                       letterSpacing: .7,
                     ),
                   ),
@@ -3225,61 +4296,76 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
             final active =
                 selectedItem == item &&
                 (widget.currentGroup == null || widget.currentGroup == title);
-
+            final activeColor = panelAccent(context);
+            const activeForeground = Colors.white;
             final childIcon = _childIcon(item);
 
             return Padding(
               padding: const EdgeInsets.only(left: 9, bottom: 3),
-
-              child: Material(
-                color: active ? panelAccent(context) : Colors.transparent,
-
-                borderRadius: BorderRadius.circular(9),
-
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(9),
-
-                  onTap: () => _select(item, parentGroup: title),
-
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-
-                      vertical: 10,
-                    ),
-
-                    child: Row(
-                      children: [
-                        Icon(
-                          childIcon,
-
-                          size: 17,
-
-                          color: active
-                              ? Colors.white
-                              : const Color(0xFFAEB8CB),
-                        ),
-
-                        const SizedBox(width: 11),
-
-                        Expanded(
-                          child: Text(
-                            item,
-
-                            style: TextStyle(
-                              color: active
-                                  ? Colors.white
-                                  : const Color(0xFFD0D7E5),
-
-                              fontSize: 12,
-
-                              fontWeight: active
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
+              child: Semantics(
+                selected: active,
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => _select(item, parentGroup: title),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: active ? activeColor : null,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: active
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: .14),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        children: [
+                          if (active)
+                            Container(
+                              width: 3,
+                              height: 20,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: activeForeground.withValues(alpha: .85),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                          Icon(
+                            childIcon,
+                            size: 17,
+                            color: active
+                                ? activeForeground
+                                : const Color(0xFFAEB8CB),
+                          ),
+                          const SizedBox(width: 11),
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: TextStyle(
+                                color: active
+                                    ? activeForeground
+                                    : const Color(0xFFD0D7E5),
+                                fontSize: 12,
+                                fontWeight: active
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -3720,19 +4806,21 @@ class _DashboardDrawerState extends State<DashboardDrawer> {
   }
 }
 
-BoxDecoration _cardDecoration({double radius = 16}) => BoxDecoration(
-  color: premiumSurface,
-  borderRadius: BorderRadius.circular(radius),
-  border: Border.all(color: premiumBorder),
-  boxShadow: const [
-    BoxShadow(
-      color: Color(0x0A10192D),
-      blurRadius: 16,
-      spreadRadius: 0,
-      offset: Offset(0, 5),
-    ),
-  ],
-);
+BoxDecoration _cardDecoration({double radius = 16}) {
+  return BoxDecoration(
+    color: premiumSurface,
+    borderRadius: BorderRadius.circular(radius),
+    border: Border.all(color: premiumBorder),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x0A10192D),
+        blurRadius: 16,
+        spreadRadius: 0,
+        offset: Offset(0, 5),
+      ),
+    ],
+  );
+}
 
 class _OnboardStep extends StatelessWidget {
   final IconData icon;

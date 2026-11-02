@@ -1,13 +1,19 @@
 part of '../app.dart';
 
-class CRMOverviewScreen extends StatelessWidget {
+class CRMOverviewScreen extends StatefulWidget {
   const CRMOverviewScreen({super.key});
 
-  static const Color _ink = Color(0xFF17243B);
-  static const Color _muted = Color(0xFF667892);
+  @override
+  State<CRMOverviewScreen> createState() => _CRMOverviewScreenState();
+}
+
+class _CRMOverviewScreenState extends State<CRMOverviewScreen> {
+  static const Color _ink = navy;
+  static const Color _muted = muted;
+  bool _showGuide = true;
   Color get _teal => PanelThemeController.instance.accentColor;
   static const Color _line = Color(0xFFDCE3EE);
-  static const Color _canvas = Color(0xFFF4F6FB);
+  Color get _canvas => pageColor;
 
   Widget _card({
     required Widget child,
@@ -360,96 +366,105 @@ class CRMOverviewScreen extends StatelessWidget {
                     Icons.menu_book_outlined,
                     'How to use CRM & Automation',
                     'Step-by-step: from getting leads in to automatic follow-ups and results.',
-                    action: '⌃  Hide guide',
+                    action: _showGuide ? '⌃  Hide guide' : '⌄  Show guide',
+                    onAction: () => setState(() => _showGuide = !_showGuide),
                   ),
-                  const SizedBox(height: 12),
-                  LayoutBuilder(
-                    builder: (context, c) {
-                      final wide = c.maxWidth > 850;
-                      final items = [
-                        _guideCard(Icons.tune, 'Step 1. Set up your CRM', '', [
-                          'Pick your Time zone and business hours (days and times). Journeys can wait for business hours before sending.',
-                          'Set most automated messages per lead in 24 hours so nobody gets too many messages.',
-                          'Under Team access to CRM, give each team member a CRM role: Manager sees and does everything; Sales sees only the leads assigned to them; Viewer can only look.',
-                        ], link: 'CRM Settings →'),
-                        _guideCard(
-                          Icons.local_fire_department_outlined,
-                          'Step 2. Bring in your leads',
-                          '',
-                          [
-                            'Every lead sent to your Webhook URL appears in Leads within seconds.',
-                            'Connect Facebook / Instagram / Google Ads or your website form through your webhook URL.',
-                            'You can also import leads from CSV or click Add lead on the Leads page.',
-                          ],
-                          link: 'Lead Sources →',
-                        ),
-                        _guideCard(
-                          Icons.assignment_ind_outlined,
-                          'Step 3. Work your leads',
-                          '',
-                          [
-                            'Each lead moves through the pipeline: New → Contacted → Interested → Qualified → Converted (or Lost).',
-                            'Click a lead to see its full history, add notes and tags, and assign an owner.',
-                            'Filter by status, source, tag or owner; select many leads for bulk actions.',
-                          ],
-                          link: 'Leads →',
-                        ),
-                        _guideCard(
-                          Icons.hub_outlined,
-                          'Step 4. Build an automation (journey)',
-                          '',
-                          [
-                            'Start from a ready template (for example 7-day lead follow-up) or a blank journey.',
-                            'Trigger decides who enters: A new lead arrives, a tag is added, an API / webhook call, or a date and time.',
-                            'Add WhatsApp / SMS / RCS message, Wait, Condition, Action, Go to step, Goal / Converted and Stop.',
-                          ],
-                          link: 'Automations → New automation',
-                        ),
-                        _guideCard(
-                          Icons.science_outlined,
-                          'Step 5. Test, then publish',
-                          '',
-                          [
-                            'Click Test this journey and enter your mobile number. The draft runs only for you.',
-                            'When it looks right, click Publish. From now on, every new lead that matches the trigger starts automatically.',
-                            'Pause stops new runs and running steps until you resume.',
-                          ],
-                          link: 'In the journey builder →',
-                        ),
-                        _guideCard(
-                          Icons.bar_chart,
-                          'Step 6. Track the results',
-                          '',
-                          [
-                            'Analytics shows how many leads entered, messages sent, delivered, read, replies and conversions.',
-                            'Journeys & logs list every lead in the automation and what happened at each step.',
-                            'The CRM Overview (this page) sums up leads, pipeline, sources and automation results.',
-                          ],
-                          link: 'Journey → Analytics, Journeys & logs →',
-                        ),
-                      ];
-                      return Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: items
-                            .map(
-                              (w) => SizedBox(
-                                width: wide
-                                    ? (c.maxWidth - 10) / 2
-                                    : c.maxWidth,
-                                child: w,
-                              ),
-                            )
-                            .toList(),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  _guideCard(Icons.shield_outlined, 'Good to know', '', [
-                    'Messages sent by journeys are charged from your wallet like campaigns. If the wallet is empty, the message step fails and can be retried later.',
-                    'Leads who opted out or are on the do-not-contact list are always skipped.',
-                    'A lead runs only once at a time in the same journey, so a lead that comes in twice is never messaged twice at the same time.',
-                  ]),
+                  if (_showGuide) ...[
+                    const SizedBox(height: 12),
+                    LayoutBuilder(
+                      builder: (context, c) {
+                        final wide = c.maxWidth > 850;
+                        final items = [
+                          _guideCard(
+                            Icons.tune,
+                            'Step 1. Set up your CRM',
+                            '',
+                            [
+                              'Pick your Time zone and business hours (days and times). Journeys can wait for business hours before sending.',
+                              'Set most automated messages per lead in 24 hours so nobody gets too many messages.',
+                              'Under Team access to CRM, give each team member a CRM role: Manager sees and does everything; Sales sees only the leads assigned to them; Viewer can only look.',
+                            ],
+                            link: 'CRM Settings →',
+                          ),
+                          _guideCard(
+                            Icons.local_fire_department_outlined,
+                            'Step 2. Bring in your leads',
+                            '',
+                            [
+                              'Every lead sent to your Webhook URL appears in Leads within seconds.',
+                              'Connect Facebook / Instagram / Google Ads or your website form through your webhook URL.',
+                              'You can also import leads from CSV or click Add lead on the Leads page.',
+                            ],
+                            link: 'Lead Sources →',
+                          ),
+                          _guideCard(
+                            Icons.assignment_ind_outlined,
+                            'Step 3. Work your leads',
+                            '',
+                            [
+                              'Each lead moves through the pipeline: New → Contacted → Interested → Qualified → Converted (or Lost).',
+                              'Click a lead to see its full history, add notes and tags, and assign an owner.',
+                              'Filter by status, source, tag or owner; select many leads for bulk actions.',
+                            ],
+                            link: 'Leads →',
+                          ),
+                          _guideCard(
+                            Icons.hub_outlined,
+                            'Step 4. Build an automation (journey)',
+                            '',
+                            [
+                              'Start from a ready template (for example 7-day lead follow-up) or a blank journey.',
+                              'Trigger decides who enters: A new lead arrives, a tag is added, an API / webhook call, or a date and time.',
+                              'Add WhatsApp / SMS / RCS message, Wait, Condition, Action, Go to step, Goal / Converted and Stop.',
+                            ],
+                            link: 'Automations → New automation',
+                          ),
+                          _guideCard(
+                            Icons.science_outlined,
+                            'Step 5. Test, then publish',
+                            '',
+                            [
+                              'Click Test this journey and enter your mobile number. The draft runs only for you.',
+                              'When it looks right, click Publish. From now on, every new lead that matches the trigger starts automatically.',
+                              'Pause stops new runs and running steps until you resume.',
+                            ],
+                            link: 'In the journey builder →',
+                          ),
+                          _guideCard(
+                            Icons.bar_chart,
+                            'Step 6. Track the results',
+                            '',
+                            [
+                              'Analytics shows how many leads entered, messages sent, delivered, read, replies and conversions.',
+                              'Journeys & logs list every lead in the automation and what happened at each step.',
+                              'The CRM Overview (this page) sums up leads, pipeline, sources and automation results.',
+                            ],
+                            link: 'Journey → Analytics, Journeys & logs →',
+                          ),
+                        ];
+                        return Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: items
+                              .map(
+                                (w) => SizedBox(
+                                  width: wide
+                                      ? (c.maxWidth - 10) / 2
+                                      : c.maxWidth,
+                                  child: w,
+                                ),
+                              )
+                              .toList(),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    _guideCard(Icons.shield_outlined, 'Good to know', '', [
+                      'Messages sent by journeys are charged from your wallet like campaigns. If the wallet is empty, the message step fails and can be retried later.',
+                      'Leads who opted out or are on the do-not-contact list are always skipped.',
+                      'A lead runs only once at a time in the same journey, so a lead that comes in twice is never messaged twice at the same time.',
+                    ]),
+                  ],
                 ],
               ),
             ),

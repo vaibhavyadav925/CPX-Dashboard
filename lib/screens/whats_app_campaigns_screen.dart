@@ -58,7 +58,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
       count: '1 Contacts',
       date: '9/3/2026',
       time: '12:35 pm',
-      amount: '₹0.94',
+      amount: '₹0',
       total: 1,
       read: 0,
       delivered: 1,
@@ -165,52 +165,26 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
       appBar: buildCpxBoatAppBar(context),
       body: SafeArea(
         child: ListView(
-          padding: EdgeInsets.all(wide ? 22 : 13),
+          padding: EdgeInsets.fromLTRB(wide ? 28 : 16, wide ? 26 : 18, wide ? 28 : 16, 28),
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Campaigns',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: navy,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Send and track your WhatsApp campaigns.',
-                        style: TextStyle(fontSize: 12, color: muted),
-                      ),
-                    ],
-                  ),
-                ),
-                if (wide)
-                  FilledButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const WhatsAppNewCampaignScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('New campaign'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: panelAccent(context),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 15,
-                      ),
-                    ),
-                  ),
-              ],
+            PremiumPageHeader(
+              title: 'Campaigns',
+              subtitle: 'Send and track your WhatsApp campaigns.',
+              eyebrow: 'WhatsApp',
+              icon: Icons.send_rounded,
+              action: wide
+                  ? FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const WhatsAppNewCampaignScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('New campaign'),
+                    )
+                  : null,
             ),
             if (!wide)
               Align(
@@ -234,7 +208,7 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                   ),
                 ),
               ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 24),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -243,11 +217,22 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                 SizedBox(
                   width: filterWidth,
                   child: TextField(
+                    key: const ValueKey('whatsapp-campaign-search'),
                     controller: _search,
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       hintText: 'Search campaigns...',
-                      prefixIcon: const Icon(Icons.search, size: 20),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      suffixIcon: _search.text.isEmpty
+                          ? null
+                          : IconButton(
+                              tooltip: 'Clear campaign search',
+                              onPressed: () {
+                                _search.clear();
+                                setState(() {});
+                              },
+                              icon: const Icon(Icons.close_rounded, size: 18),
+                            ),
                       filled: true,
                       fillColor: Colors.white,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -360,22 +345,49 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                 border: Border.all(color: const Color(0xFFDCE5F3)),
               ),
               clipBehavior: Clip.antiAlias,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
+              child: _filtered.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: PremiumEmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: _campaigns.isEmpty
+                            ? 'No campaigns yet'
+                            : 'No campaigns match these filters',
+                        message: _campaigns.isEmpty
+                            ? 'Create your first campaign to start tracking delivery performance.'
+                            : 'Try changing your search or date filters to see more campaigns.',
+                        action: _campaigns.isEmpty
+                            ? null
+                            : TextButton.icon(
+                                onPressed: () {
+                                  _search.clear();
+                                  setState(() {
+                                    _status = 'All statuses';
+                                    _from = null;
+                                    _to = null;
+                                  });
+                                },
+                                icon: const Icon(Icons.filter_alt_off_rounded),
+                                label: const Text('Clear filters'),
+                              ),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
                   horizontalMargin: 14,
                   columnSpacing: wide ? 24 : 18,
                   headingRowHeight: 44,
                   dataRowMinHeight: 72,
                   dataRowMaxHeight: 82,
                   dividerThickness: .7,
-                  headingRowColor: WidgetStateProperty.all(
-                    panelAccent(context),
+                  headingRowColor: const WidgetStatePropertyAll(
+                    Color(0xFFF5F7FB),
                   ),
                   headingTextStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF526078),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
                   ),
                   dataTextStyle: const TextStyle(color: navy, fontSize: 12),
                   columns: const [
@@ -418,8 +430,8 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                                 _selectedCampaigns.remove(index);
                               }
                             }),
-                          ),
-                        ),
+                                ),
+                              ),
                         DataCell(
                           InkWell(
                             onTap: () => _showCampaignReport(campaign),
@@ -748,12 +760,9 @@ class _WhatsAppCampaignsScreenState extends State<WhatsAppCampaignsScreen> {
                 child: _CampaignReportSidePanel(
                   campaign: campaign,
                   onClose: () => Navigator.of(dialogContext).pop(),
-                  onDownload: (label) => saveCampaignCsv(
-                    context,
-                    'whatsapp',
-                    [campaign],
-                    statsOnly: label == 'Download Stats',
-                  ),
+                  onDownload: (label) => saveCampaignCsv(context, 'whatsapp', [
+                    campaign,
+                  ], statsOnly: label == 'Download Stats'),
                 ),
               ),
             ),

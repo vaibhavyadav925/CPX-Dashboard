@@ -8,7 +8,7 @@ class SecurityScreen extends StatefulWidget {
 }
 
 class _SecurityScreenState extends State<SecurityScreen> {
-  final Color ink = const Color(0xFF14213A);
+  final Color ink = navy;
   final Color borderColor = const Color(0xFFD9DFEA);
   final TextEditingController currentPasswordController =
       TextEditingController();
@@ -29,7 +29,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
+      backgroundColor: pageColor,
       drawer: const DashboardDrawer(currentPage: 'Security'),
       appBar: buildCpxBoatAppBar(context),
       body: ListView(

@@ -428,7 +428,7 @@ class _AgentRolesScreenState extends State<AgentRolesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: pageColor,
+      backgroundColor: Colors.transparent,
       appBar: buildCpxBoatAppBar(context),
       drawer: const DashboardDrawer(currentPage: 'Agent Roles'),
       body: SafeArea(
