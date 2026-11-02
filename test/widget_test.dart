@@ -268,6 +268,30 @@ void main() {
     expect(appBar.foregroundColor, brandNavy);
   });
 
+  testWidgets('top bar notifications open the center and settings', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            appBar: buildCpxBoatAppBar(context),
+            body: const SizedBox(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Notifications'));
+    await tester.pumpAndSettle();
+    expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text("You're all caught up"), findsOneWidget);
+
+    await tester.tap(find.text('Notification settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Panel Theme'), findsOneWidget);
+  });
+
   testWidgets('CRM overview guide can be hidden and shown', (tester) async {
     tester.view.physicalSize = const Size(900, 1200);
     tester.view.devicePixelRatio = 1;

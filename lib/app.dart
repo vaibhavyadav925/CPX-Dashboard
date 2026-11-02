@@ -1242,15 +1242,67 @@ PreferredSizeWidget buildCpxBoatAppBar(BuildContext context) {
         visualDensity: VisualDensity.compact,
         icon: const Icon(Icons.account_circle_outlined, size: 21),
       ),
-      Padding(
-        padding: const EdgeInsets.only(left: 1, right: 12),
-        child: Icon(
+      IconButton(
+        tooltip: 'Notifications',
+        onPressed: () => _showNotificationCenter(context),
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        padding: const EdgeInsets.only(left: 3, right: 10),
+        visualDensity: VisualDensity.compact,
+        icon: Icon(
           Icons.notifications_none_rounded,
           size: 22,
           color: topBarForeground,
         ),
       ),
     ],
+  );
+}
+
+void _showNotificationCenter(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.notifications_none_rounded, size: 22),
+          SizedBox(width: 9),
+          Text('Notifications'),
+        ],
+      ),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.notifications_off_outlined, size: 34, color: muted),
+          SizedBox(height: 12),
+          Text(
+            "You're all caught up",
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'New notifications will appear here.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: muted, fontSize: 13),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton.icon(
+          onPressed: () {
+            Navigator.of(dialogContext).pop();
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const PanelThemeScreen()));
+          },
+          icon: const Icon(Icons.tune_rounded, size: 18),
+          label: const Text('Notification settings'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
   );
 }
 

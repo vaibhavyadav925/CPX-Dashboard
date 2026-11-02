@@ -275,6 +275,126 @@ class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
     ).whenComplete(nameController.dispose);
   }
 
+  void _showEditAutomationDialog(Map<String, dynamic> automation) {
+    final nameController = TextEditingController(
+      text: automation['name'] as String? ?? '',
+    );
+    final subtitleController = TextEditingController(
+      text: automation['subtitle'] as String? ?? '',
+    );
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: premiumSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(13),
+          ),
+          title: const Text(
+            'Edit automation',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+            ),
+          ),
+          content: SizedBox(
+            width: 420,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Name', style: TextStyle(fontSize: 12, color: _ink)),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    hintText: 'Automation name',
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 12,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8F9FC),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: _line),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Trigger and channels',
+                  style: TextStyle(fontSize: 12, color: _ink),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: subtitleController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    hintText: 'e.g. New lead · WhatsApp, SMS',
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 12,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8F9FC),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: _line),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final name = nameController.text.trim();
+                final subtitle = subtitleController.text.trim();
+
+                if (name.isEmpty || subtitle.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please complete both fields.'),
+                    ),
+                  );
+                  return;
+                }
+
+                setState(() {
+                  automation['name'] = name;
+                  automation['subtitle'] = subtitle;
+                });
+
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Automation updated successfully.'),
+                  ),
+                );
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: _teal,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Save changes'),
+            ),
+          ],
+        );
+      },
+    ).whenComplete(() {
+      nameController.dispose();
+      subtitleController.dispose();
+    });
+  }
+
   Widget _metric(String label, String value, IconData icon) {
     return Expanded(
       child: Container(
@@ -533,14 +653,8 @@ class _CRMAutomationsScreenState extends State<CRMAutomationsScreen> {
                             Row(
                               children: [
                                 OutlinedButton.icon(
-                                  onPressed: () => ScaffoldMessenger.of(context)
-                                      .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Builder preview is not connected yet.',
-                                          ),
-                                        ),
-                                      ),
+                                  onPressed: () =>
+                                      _showEditAutomationDialog(automation),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: _ink,
                                     padding: const EdgeInsets.symmetric(
